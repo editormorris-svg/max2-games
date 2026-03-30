@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verona Quest: Save Romeo & Juliet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Title Screen */
+        .title-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .title-screen h1 {
+            font-size: 3.5em;
+            color: #e94560;
+            text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .title-screen h2 {
+            font-size: 1.8em;
+            color: #ffd700;
+            margin-bottom: 40px;
+        }
+        
+        .title-screen p {
+            font-size: 1.2em;
+            color: #ccc;
+            max-width: 600px;
+            margin: 20px auto;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #e94560 0%, #c23a51 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(233, 69, 96, 0.6);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #533483 0%, #2e1a47 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+        }
+        
+        /* Character Creation */
+        .character-creation {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2em;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #ccc;
+        }
+        
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: 2px solid #533483;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        /* Token Selection */
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .token {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #533483;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 2.5em;
+        }
+        
+        .token:hover {
+            transform: scale(1.1);
+            border-color: #e94560;
+        }
+        
+        .token.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transform: scale(1.1);
+        }
+        
+        /* Attribute Allocation */
+        .attributes-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .attribute-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #533483;
+        }
+        
+        .attribute-card h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        
+        .attribute-value {
+            font-size: 2.5em;
+            color: #e94560;
+            margin: 15px 0;
+        }
+        
+        .attribute-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: all 0.2s;
+        }
+        
+        .attribute-btn.minus {
+            background: #e74c3c;
+            color: white;
+        }
+        
+.attribute-btn.plus {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .attribute-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .attribute-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .points-remaining {
+            text-align: center;
+            font-size: 1.3em;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+        
+        /* Game Map */
+        .game-map {
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect fill="%231a1a2e" width="800" height="600"/><rect fill="%232d3a4a" x="0" y="500" width="800" height="100"/></svg>');
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            min-height: 600px;
+            background-color: #1a1a2e;
+        }
+        
+        .location {
+            position: absolute;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .location:hover {
+            transform: scale(1.1);
+        }
+        
+        .location-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #533483 0%, #2e1a47 100%);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            border: 3px solid #ffd700;
+        }
+        
+        .location-name {
+            font-size: 0.9em;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .location.locked .location-icon {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .location.visited .location-icon {
+border-color: #27ae60;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .player-token {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #533483 0%, #2e1a47 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            border: 2px solid #ffd700;
+        }
+        
+        .player-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.75em;
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+        
+        .gold-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3em;
+            color: #ffd700;
+        }
+        
+        /* Mini Games */
+        .minigame-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .minigame-title {
+            text-align: center;
+            font-size: 1.8em;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        
+        .minigame-quote {
+            text-align: center;
+            font-style: italic;
+            color: #aaa;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .minigame-instructions {
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 25px;
+        }
+        
+        /* Quiz Game */
+        .quiz-question {
+            font-size: 1.3em;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+        }
+        
+        .quiz-options {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .quiz-option {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #533483;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+        
+        .quiz-option.correct {
+            background: rgba(39, 174, 96, 0.3);
+            border-color: #27ae60;
+        }
+        
+        .quiz-option.wrong {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+        }
+        
+        /* Combat Game */
+        .combat-arena {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #2d3a4a 100%);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .combatant {
+            position: absolute;
+            bottom: 50px;
+            font-size: 3em;
+        }
+        
+        .combatant.player {
+            left: 50px;
+        }
+        
+        .combatant.enemy {
+            right: 50px;
+        }
+        
+        .health-bar {
+            position: absolute;
+            bottom: 120px;
+            width: 80px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        
+        .health-bar-fill {
+            height: 100%;
+            background: #27ae60;
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+        
+        .health-bar.player {
+            left: 25px;
+        }
+        
+        .health-bar.enemy {
+            right: 25px;
+        }
+        
+        .combat-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .combat-btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .combat-btn.attack {
+            background: #e94560;
+            color: white;
+        }
+        
+        .combat-btn.defend {
+            background: #3498db;
+            color: white;
+        }
+        
+        .combat-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Race Game */
+        .race-track {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(90deg, #1a1a2e 0%, #2d3a4a 50%, #1a1a2e 100%);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .race-track::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #ffd700;
+            opacity: 0.3;
+        }
+        
+        .racer {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            transition: left 0.1s;
+        }
+        
+        .obstacle {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            animation: moveObstacle 2s linear infinite;
+        }
+        
+        @keyframes moveObstacle {
+            from { right: -50px; }
+            to { right: 100%; }
+        }
+        
+        .race-progress {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .race-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560 0%, #ffd700 100%);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        /* Pattern Memory Game */
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .pattern-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            border: 3px solid #533483;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 2em;
+        }
+        
+        .pattern-btn.active {
+            background: #e94560;
+            transform: scale(1.1);
+        }
+        
+        .pattern-btn.correct {
+            background: #27ae60;
+        }
+        
+        .pattern-btn.wrong {
+            background: #e74c3c;
+        }
+        
+        /* Item Shop */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .shop-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #533483;
+            transition: all 0.3s;
+        }
+        
+        .shop-item:hover {
+            border-color: #ffd700;
+            transform: translateY(-5px);
+        }
+        
+        .shop-item-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item-name {
+            font-size: 1em;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .shop-item-effect {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item-price {
+            color: #ffd700;
+            font-size: 1.1em;
+        }
+        
+        .shop-item-btn {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: #e94560;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .shop-item-btn:hover {
+            background: #c23a51;
+        }
+        
+        .shop-item-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        /* Inventory */
+        .inventory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        
+        .inventory-item-icon {
+            font-size: 1.2em;
+        }
+        
+        /* Story Scenes */
+        .story-scene {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            border-left: 5px solid #e94560;
+        }
+        
+        .scene-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scene-number {
+            background: #e94560;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .scene-title {
+            font-size: 1.5em;
+            color: #ffd700;
+        }
+        
+        .scene-content {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #ddd;
+        }
+        
+        .scene-quote {
+            font-style: italic;
+            color: #aaa;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .choices-container {
+            margin-top: 25px;
+        }
+        
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #533483;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .choice-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+        
+        /* Dice Roll Animation */
+        .dice-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .dice {
+            font-size: 4em;
+            animation: rollDice 1s ease-out;
+        }
+        
+        @keyframes rollDice {
+            0% { transform: rotate(0deg) scale(0); }
+            50% { transform: rotate(360deg) scale(1.2); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+        
+        .dice-result {
+            font-size: 1.5em;
+            color: #ffd700;
+            margin-top: 15px;
+        }
+        
+        /* Endings */
+        .ending-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .ending-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .ending-perfect {
+            color: #ffd700;
+        }
+        
+        .ending-good {
+            color: #27ae60;
+        }
+        
+        .ending-tragic {
+            color: #e94560;
+        }
+        
+        .ending-bad {
+            color: #666;
+        }
+        
+        .ending-content {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #ccc;
+        }
+        
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* Backpack/Items Button */
+        .backpack-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #533483 0%, #2e1a47 100%);
+            border: 3px solid #ffd700;
+            font-size: 1.8em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .backpack-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Act Progress */
+        .act-progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .act-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            border: 2px solid #555;
+        }
+        
+        .act-dot.current {
+            background: #e94560;
+            border-color: #ffd700;
+        }
+        
+        .act-dot.completed {
+            background: #27ae60;
+            border-color: #27ae60;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .token-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .attributes-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .shop-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .title-screen h1 {
+                font-size: 2.5em;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen active">
+            <div class="title-screen">
+                <h1>Verona Quest</h1>
+                <h2>Save Romeo & Juliet</h2>
+                <p>
+                    Verona is torn apart by the feud between the Montagues and Capulets. 
+                    Young Romeo and Juliet have fallen deeply in love, but fate seems 
+                    determined to keep them apart. As a young citizen of Verona, YOU have 
+                    the power to change their destiny!
+                </p>
+                <p>
+                    <strong>Act 5, Scene 3:</strong><br>
+                    <em>"For never was a story of more woe,<br>
+                    Than this of Juliet and her Romeo."</em>
+                </p>
+                <button class="btn" onclick="startGame()">Begin Your Quest</button>
+            </div>
+        </div>
+        
+        <!-- Character Creation -->
+        <div id="character-screen" class="screen">
+            <div class="character-creation">
+                <h2 class="section-title">Create Your Character</h2>
+                
+                <div class="form-group">
+                    <label>Enter Your Name:</label>
+                    <input type="text" id="player-name" placeholder="Your name in Verona..." maxlength="20">
+                </div>
+                
+                <div class="form-group">
+                    <label>Choose Your Token (12 Characters of Verona):</label>
+                    <div class="token-grid" id="token-grid"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Allocate Your Attribute Points (5 points to distribute):</label>
+                    <div class="points-remaining">Points Remaining: <span id="points-remaining">5</span></div>
+                    <div class="attributes-container" id="attributes-container"></div>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="goToScreen('title-screen')">Back</button>
+                    <button class="btn btn-success" id="create-char-btn" onclick="createCharacter()" disabled>Enter Verona</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="status-bar">
+                <div class="player-info">
+                    <div class="player-token" id="player-token-display"></div>
+                    <div>
+                        <div id="player-name-display" style="font-weight: bold; font-size: 1.2em;"></div>
+                        <div style="font-size: 0.9em; color: #aaa;" id="player-role"></div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat">
+                        <div class="stat-label">Power</div>
+                        <div class="stat-value" id="stat-power">5</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Speed</div>
+                        <div class="stat-value" id="stat-speed">5</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Health</div>
+                        <div class="stat-value" id="stat-health">5</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Intel</div>
+                        <div class="stat-value" id="stat-intelligence">5</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Beauty</div>
+                        <div class="stat-value" id="stat-beauty">5</div>
+                    </div>
+                </div>
+                <div class="gold-display">
+                    <span>💰</span>
+                    <span id="gold-display">0</span>
+                </div>
+            </div>
+            
+            <div class="act-progress" id="act-progress"></div>
+            
+            <div class="game-map" id="game-map"></div>
+            
+            <div class="nav-buttons">
+                <button class="btn" onclick="goToShop()">🛒 Item Shop</button>
+                <button class="btn btn-secondary" onclick="useItem()">🎒 Use Item</button>
+                <button class="btn btn-success" onclick="advanceStory()">📜 Story</button>
+            </div>
+            
+            <button class="backpack-btn" onclick="toggleInventory()">🎒</button>
+        </div>
+        
+        <!-- Location Screen -->
+        <div id="location-screen" class="screen">
+            <div class="minigame-container">
+                <div class="minigame-title" id="location-name"></div>
+                <div class="minigame-quote" id="location-quote"></div>
+                <div id="minigame-content"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToScreen('game-screen')">← Return to Map</button>
+            </div>
+        </div>
+        
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen">
+            <h2 class="section-title">Verona Market - Item Shop</h2>
+            <div class="shop-grid" id="shop-grid"></div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToScreen('game-screen')">← Return to Map</button>
+            </div>
+        </div>
+        
+        <!-- Inventory Screen -->
+        <div id="inventory-screen" class="screen">
+            <h2 class="section-title">Your Backpack</h2>
+            <div class="inventory-grid" id="inventory-grid"></div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToScreen('game-screen')">← Return to Map</button>
+            </div>
+        </div>
+        
+        <!-- Story Screen -->
+        <div id="story-screen" class="screen">
+            <div class="story-scene" id="story-content"></div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goToScreen('game-screen')">← Return to Map</button>
+            </div>
+        </div>
+        
+        <!-- Ending Screen -->
+        <div id="ending-screen" class="screen">
+            <div class="ending-screen" id="ending-content"></div>
+            <div class="nav-buttons">
+                <button class="btn" onclick="restartGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            playerName: '',
+            token: '',
+            attributes: {
+                power: 5,
+                speed: 5,
+                health: 5,
+                intelligence: 5,
+                beauty: 5
+            },
+            pointsRemaining: 5,
+            gold: 20,
+            inventory: [],
+            currentAct: 1,
+            visitedLocations: [],
+            dailyGamesPlayed: 0,
+            storyProgress: 0,
+            hasPeaceTreaty: false,
+            hasLoveLetter: false,
+            julietHealth: 100,
+            romeoHealth: 100
+        };
+        
+        // Token Options (12 Character Avatars)
+        const tokens = [
+            { icon: '🤴', name: 'Noble Prince' },
+            { icon: '👑', name: 'Lord Capulet' },
+            { icon: '🧙', name: 'Friar Lawrence' },
+            { icon: '🎭', name: 'Mercutio' },
+            { icon: '💃', name: 'Juliet' },
+            { icon: '🧑', name: 'Romeo' },
+            { icon: '⚔️', name: 'Tybalt' },
+            { icon: '👸', name: 'Lady Capulet' },
+            { icon: '🤴', name: 'Paris' },
+            { icon: '👵', name: 'Nurse' },
+            { icon: '🎪', name: 'Benvolio' },
+            { icon: '🦅', name: 'Lord Montague' }
+        ];
+        
+        // Locations
+        const locations = [
+            {
+                id: 'square',
+                name: 'Public Square',
+                icon: '🏛️',
+                x: 50,
+                y: 200,
+                minigame: 'merchant',
+                attribute: 'intelligence',
+                reward: 15,
+                quote: '"O, then, I see Queen Mab hath been with you..."',
+                quoteSource: 'Act 1, Scene 4 - Mercutio'
+            },
+            {
+                id: 'montague',
+                name: 'Montague House',
+                icon: '🏠',
+                x: 150,
+                y: 80,
+                minigame: 'combat',
+                attribute: 'power',
+                reward: 20,
+                quote: '"My sword, I say! Old Montague is come..."',
+                quoteSource: 'Act 1, Scene 1'
+            },
+            {
+                id: 'capulet',
+                name: 'Capulet Mansion',
+                icon: '🏰',
+                x: 550,
+                y: 80,
+                minigame: 'dance',
+                attribute: 'beauty',
+                reward: 25,
+                quote: '"See, how she leans her cheek upon her hand..."',
+                quoteSource: 'Act 1, Scene 5 - Romeo'
+            },
+            {
+                id: 'balcony',
+                name: 'The Balcony',
+                icon: '🌙',
+                x: 650,
+                y: 180,
+                minigame: 'memory',
+                attribute: 'intelligence',
+                reward: 20,
+                quote: '"What\'s in a name? That which we call a rose..."',
+                quoteSource: 'Act 2, Scene 2 - Juliet'
+            },
+            {
+                id: 'church',
+                name: 'The Church',
+                icon: '⛪',
+                x: 350,
+                y: 50,
+                minigame: 'quiz',
+                attribute: 'intelligence',
+                reward: 30,
+                quote: '"For never was a story of more woe..."',
+                quoteSource: 'Act 5, Scene 3 - Prince'
+            },
+            {
+                id: 'cell',
+                name: 'Friar\'s Cell',
+                icon: '🌿',
+                x: 200,
+                y: 350,
+                minigame: 'potion',
+                attribute: 'intelligence',
+                reward: 25,
+                quote: '"Virtue itself turns vice, being misapplied..."',
+                quoteSource: 'Act 2, Scene 3 - Friar Lawrence'
+            },
+            {
+                id: 'street',
+                name: 'Verona Streets',
+                icon: '🛤️',
+                x: 450,
+                y: 300,
+                minigame: 'race',
+                attribute: 'speed',
+                reward: 20,
+                quote: '"Part, fools! Put up your swords..."',
+                quoteSource: 'Act 1, Scene 1 - Prince'
+            },
+            {
+                id: 'tomb',
+                name: 'The Tomb',
+                icon: '⚰️',
+                x: 600,
+                y: 400,
+                minigame: 'combat',
+                attribute: 'power',
+                reward: 35,
+                quote: '"A glooming peace this morning with it brings..."',
+                quoteSource: 'Act 5, Scene 3 - Prince'
+            }
+        ];
+        
+        // Shop Items
+        const shopItems = [
+            { id: 'health_potion', name: 'Health Potion', icon: '🧪', price: 10, effect: 'health', value: 3, description: 'Restores 3 Health' },
+            { id: 'speed_boots', name: 'Speed Boots', icon: '👟', price: 25, effect: 'speed', value: 2, description: '+2 Speed (one use)' },
+            { id: 'scholar_tome', name: 'Scholar\'s Tome', icon: '📚', price: 30, effect: 'intelligence', value: 2, description: '+2 Intelligence (one use)' },
+            { id: 'charm_pendant', name: 'Charm Pendant', icon: '💎', price: 25, effect: 'beauty', value: 2, description: '+2 Beauty (one use)' },
+            { id: 'iron_sword', name: 'Iron Sword', icon: '⚔️', price: 35, effect: 'power', value: 2, description: '+2 Power (one use)' },
+            { id: 'disguise', name: 'Disguise Mask', icon: '🎭', price: 40, effect: 'special', value: 1, description: 'Access Capulet areas safely' },
+            { id: 'love_letter', name: 'Love Letter', icon: '💌', price: 50, effect: 'story', value: 1, description: 'Critical for Juliet\'s rescue', special: true },
+            { id: 'peace_treaty', name: 'Peace Treaty', icon: '📜', price: 100, effect: 'story', value: 1, description: 'Ends the family feud!', special: true }
+        ];
+        
+        // Quiz Questions
+        const quizQuestions = [
+            {
+                question: 'What family does Romeo belong to?',
+                options: ['Capulet', 'Montague', 'Paris', 'Prince'],
+                correct: 1,
+                quote: 'Romeo Montague, from the house of Montague',
+                source: 'Act 1, Scene 1'
+            },
+            {
+                question: 'Who says "What\'s in a name? That which we call a rose..."?',
+                options: ['Romeo', 'Juliet', 'Nurse', 'Mercutio'],
+                correct: 1,
+                quote: 'Juliet speaks these famous words',
+                source: 'Act 2, Scene 2'
+            },
+            {
+                question: 'Who is Juliet\'s mother?',
+                options: ['Nurse', 'Lady Montague', 'Lady Capulet', 'Queen Mab'],
+                correct: 2,
+                quote: 'Lady Capulet urges Juliet to consider Paris',
+                source: 'Act 1, Scene 3'
+            },
+            {
+                question: 'Who kills Tybalt?',
+                options: ['Romeo', 'Mercutio', 'Benvolio', 'Paris'],
+                correct: 0,
+                quote: 'Romeo, filled with grief, slays Tybalt',
+                source: 'Act 3, Scene 1'
+            },
+            {
+                question: 'What does Juliet drink to fake her death?',
+                options: ['Water', 'Poison', 'Sleeping potion', 'Wine'],
+                correct: 2,
+                quote: 'Friar Lawrence gives Juliet a potion',
+                source: 'Act 4, Scene 1'
+            },
+            {
+                question: 'Who marries Romeo and Juliet in secret?',
+                options: ['The Prince', 'Friar Lawrence', 'The Nurse', 'Benvolio'],
+                correct: 1,
+                quote: 'Friar Lawrence agrees to marry them',
+                source: 'Act 2, Scene 6'
+            },
+            {
+                question: 'Where do Romeo and Juliet first meet?',
+                options: ['At the Church', 'At Juliet\'s Balcony', 'At the Capulet Ball', 'In the Streets'],
+                correct: 2,
+                quote: 'They meet at Lord Capulet\'s masked ball',
+                source: 'Act 1, Scene 5'
+            },
+            {
+                question: 'Who is Mercutio\'s friend?',
+                options: ['Tybalt', 'Paris', 'Romeo', 'Benvolio'],
+                correct: 2,
+                quote: 'Mercutio and Romeo are close companions',
+                source: 'Act 2, Scene 1'
+            }
+        ];
+        
+        // Story Scenes
+        const storyScenes = [
+            {
+                act: 1,
+                scene: 1,
+                title: 'The Street Brawl',
+                content: `
+                    <p>The streets of Verona run red with tension. Servants of the Capulets and Montagues clash in a fierce brawl. 
+                    The Prince himself must intervene to stop the bloodshed.</p>
+                    <div class="scene-quote">
+                        "Rebellious subjects, enemies to peace,<br>
+                        Profaners of this neighbour-stood steel!<br>
+                        Your lives shall pay the forfeit of the peace."<br>
+                        <small>— Prince Escalus, Act 1, Scene 1</small>
+                    </div>
+                    <p>As a citizen of Verona, you witness the chaos. Romeo arrives late, pining for Rosaline. 
+                    Tybalt, Juliet's hot-headed cousin, threatens violence.</p>
+                `,
+                choice: {
+                    prompt: 'What will you do?',
+                    options: [
+                        { text: 'Try to calm everyone down (Intelligence Challenge)', attribute: 'intelligence', success: 'You help restore peace! The Prince is grateful.' },
+                        { text: 'Stand with the Montagues (Power Challenge)', attribute: 'power', success: 'You earn respect from the Montague house.' },
+                        { text: 'Stand with the Capulets (Beauty Challenge)', attribute: 'beauty', success: 'The Capulets welcome your support.' }
+                    ]
+                }
+            },
+            {
+                act: 1,
+                scene: 5,
+                title: 'The Capulet Ball',
+                content: `
+                    <p>Lord Capulet hosts a grand masquerade ball. Romeo attends in disguise, hoping to see Rosaline. 
+                    But fate has other plans...</p>
+                    <div class="scene-quote">
+                        "O, she doth teach the torches to burn bright!<br>
+                        It seems she hangs upon the cheek of night<br>
+                        Like a rich jewel in an Ethiope's ear."<br>
+                        <small>— Romeo, Act 1, Scene 5</small>
+                    </div>
+                    <p>Romeo sees Juliet across the room and falls instantly in love. Tybalt recognizes Romeo's voice 
+                    and vows revenge for this Montague intrusion.</p>
+                `,
+                choice: {
+                    prompt: 'How do you help?',
+                    options: [
+                        { text: 'Distract Tybalt (Speed Challenge)', attribute: 'speed', success: 'You prevent Tybalt from starting a fight!' },
+                        { text: 'Help Romeo and Juliet meet (Beauty Challenge)', attribute: 'beauty', success: 'You arrange a perfect meeting moment!' }
+                    ]
+                }
+            },
+            {
+                act: 2,
+                scene: 2,
+                title: 'The Balcony Scene',
+                content: `
+                    <p>Romeo has climbed to Juliet's balcony. What follows is one of the most famous scenes in all of literature.</p>
+                    <div class="scene-quote">
+                        "O Romeo, Romeo! Wherefore art thou Romeo?<br>
+                        Deny thy father and refuse thy name..."<br>
+                        <small>— Juliet, Act 2, Scene 2</small>
+                    </div>
+                    <p>The young lovers exchange vows of eternal devotion. Juliet proposes: 
+                    "If that thy bent of love be honourable, / Thy purpose marriage, send me word tomorrow."</p>
+                `,
+                choice: {
+                    prompt: 'Will you help them?',
+                    options: [
+                        { text: 'Guard their meeting (Speed Challenge)', attribute: 'speed', success: 'You keep watch and ensure their safety!' },
+                        { text: 'Seek Friar Lawrence\'s help (Intelligence Challenge)', attribute: 'intelligence', success: 'You convince the Friar to help their cause!' }
+                    ]
+                }
+            },
+            {
+                act: 3,
+                scene: 1,
+                title: 'The Fatal Duel',
+                content: `
+                    <p>Tybalt, still furious about the ball intrusion, seeks Romeo in the streets. Mercutio defends Romeo and is mortally wounded.</p>
+                    <div class="scene-quote">
+                        "A plague o' both your houses!<br>
+                        I am sped. Is 'e gone and hath nothing?"<br>
+                        <small>— Mercutio, Act 3, Scene 1</small>
+                    </div>
+                    <p>Romeo, enraged by his friend's death, confronts and kills Tybalt. The Prince banishes Romeo from Verona.</p>
+                `,
+                choice: {
+                    prompt: 'Critical choice - what do you do?',
+                    options: [
+                        { text: 'Help Romeo escape (Speed Challenge)', attribute: 'speed', success: 'Romeo escapes safely but is banished.' },
+                        { text: 'Plead for Romeo\'s life with the Prince (Intelligence Challenge)', attribute: 'intelligence', success: 'The Prince reduces the sentence to banishment.' }
+                    ]
+                }
+            },
+            {
+                act: 4,
+                scene: 1,
+                title: 'Friar\'s Plan',
+                content: `
+                    <p>Juliet's father insists she marry Paris. Desperate, Juliet seeks Friar Lawrence's help.</p>
+                    <div class="scene-quote">
+                        "And, in her rival\'s lady\'s saucy looks<br>
+                        May blindly win her love."<br>
+                        <small>— Friar Lawrence, Act 4, Scene 1</small>
+                    </div>
+                    <p>Friar gives Juliet a potion that will make her appear dead for 42 hours. Romeo will be notified and come to the tomb.</p>
+                `,
+                choice: {
+                    prompt: 'Help with the plan?',
+                    options: [
+                        { text: 'Deliver the potion to Juliet (Speed Challenge)', attribute: 'speed', success: 'You successfully deliver the potion!' },
+                        { text: 'Send a message to Romeo in Mantua (Intelligence Challenge)', attribute: 'intelligence', success: 'Your message reaches Romeo in time!' }
+                    ]
+                }
+            },
+            {
+                act: 5,
+                scene: 3,
+                title: 'The Final Tragedy',
+                content: `
+                    <p>Romeo receives news that Juliet is dead. He purchases poison and races back to Verona.</p>
+                    <div class="scene-quote">
+                        "Well, Juliet, I will lie with thee tonight.<br>
+                        'Tis rare, I'll go possess another room."<br>
+                        <small>— Romeo, Act 5, Scene 1</small>
+                    </div>
+                    <p>In the tomb, Romeo finds Juliet's "body" and takes the poison. Juliet awakens to find Romeo dying beside her.</p>
+                `,
+                choice: {
+                    prompt: 'THIS IS YOUR FINAL CHANCE - What do you do?',
+                    options: [
+                        { text: 'Use Peace Treaty + Love Letter', attribute: 'intelligence', required: ['peace_treaty', 'love_letter'], success: 'PERFECT ENDING: Your items save them both!' },
+                        { text: 'Use Love Letter only', attribute: 'beauty', required: ['love_letter'], success: 'GOOD ENDING: Juliet lives but mourns Romeo.' },
+                        { text: 'Try to stop Romeo at the door', attribute: 'power', success: 'TRAGIC ENDING: You arrive too late...' },
+                        { text: 'Give up', attribute: 'health', success: 'BAD ENDING: The tragedy unfolds as Shakespeare wrote.' }
+                    ]
+                }
+            }
+        ];
+        
+        // Initialize Game
+        function initGame() {
+            renderTokenGrid();
+            renderAttributeAllocation();
+            renderLocations();
+            renderShop();
+            renderActProgress();
+        }
+        
+        // Screen Navigation
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function startGame() {
+            goToScreen('character-screen');
+        }
+        
+        // Token Grid
+        function renderTokenGrid() {
+            const grid = document.getElementById('token-grid');
+            grid.innerHTML = tokens.map((t, i) => `
+                <div class="token" onclick="selectToken(${i})" data-token="${i}" title="${t.name}">
+                    ${t.icon}
+                </div>
+            `).join('');
+        }
+        
+        function selectToken(index) {
+            document.querySelectorAll('.token').forEach(t => t.classList.remove('selected'));
+            document.querySelector(`[data-token="${index}"]`).classList.add('selected');
+            gameState.token = tokens[index];
+            checkCreateCharacter();
+        }
+        
+        // Attribute Allocation
+        function renderAttributeAllocation() {
+            const container = document.getElementById('attributes-container');
+            const attrs = ['power', 'speed', 'health', 'intelligence', 'beauty'];
+            const names = ['Power', 'Speed', 'Health', 'Intelligence', 'Beauty'];
+            
+            container.innerHTML = attrs.map((attr, i) => `
+                <div class="attribute-card">
+                    <h3>${names[i]}</h3>
+                    <div class="attribute-value" id="attr-${attr}">5</div>
+                    <button class="attribute-btn minus" onclick="adjustAttribute('${attr}', -1)">−</button>
+                    <button class="attribute-btn plus" onclick="adjustAttribute('${attr}', 1)">+</button>
+                </div>
+            `).join('');
+        }
+        
+        function adjustAttribute(attr, delta) {
+            const newValue = gameState.attributes[attr] + delta;
+            const newRemaining = gameState.pointsRemaining - delta;
+            
+            if (newRemaining < 0 || newValue < 5 || newValue > 10) return;
+            
+            gameState.attributes[attr] = newValue;
+            gameState.pointsRemaining = newRemaining;
+            
+            document.getElementById(`attr-${attr}`).textContent = newValue;
+            document.getElementById('points-remaining').textContent = gameState.pointsRemaining;
+            
+            checkCreateCharacter();
+        }
+        
+        function checkCreateCharacter() {
+            const nameValid = document.getElementById('player-name').value.trim().length > 0;
+            const tokenSelected = gameState.token !== '';
+            const pointsUsed = gameState.pointsRemaining === 0;
+            
+            document.getElementById('create-char-btn').disabled = !(nameValid && tokenSelected && pointsUsed);
+        }
+        
+        // Create Character
+        function createCharacter() {
+            gameState.playerName = document.getElementById('player-name').value.trim();
+            
+            // Update UI
+            document.getElementById('player-token-display').textContent = gameState.token.icon;
+            document.getElementById('player-name-display').textContent = gameState.playerName;
+            document.getElementById('player-role').textContent = 'Citizen of Verona';
+            
+            updateStats();
+            goToScreen('game-screen');
+        }
+        
+        // Update Stats Display
+        function updateStats() {
+            document.getElementById('stat-power').textContent = gameState.attributes.power;
+            document.getElementById('stat-speed').textContent = gameState.attributes.speed;
+            document.getElementById('stat-health').textContent = gameState.attributes.health;
+            document.getElementById('stat-intelligence').textContent = gameState.attributes.intelligence;
+            document.getElementById('stat-beauty').textContent = gameState.attributes.beauty;
+            document.getElementById('gold-display').textContent = gameState.gold;
+        }
+        
+        // Locations
+        function renderLocations() {
+            const map = document.getElementById('game-map');
+            map.innerHTML = locations.map(loc => {
+                const visited = gameState.visitedLocations.includes(loc.id);
+                const locked = !visited && gameState.storyProgress < getLocationUnlockRequirement(loc.id);
+                const hint = locked ? getUnlockHint(loc.id) : '';
+                return `
+                    <div class="location ${locked ? 'locked' : ''} ${visited ? 'visited' : ''}" 
+                         onclick="${locked ? '' : `visitLocation('${loc.id}')`}"
+                         style="left: ${loc.x}px; top: ${loc.y}px;"
+                         title="${locked ? '🔒 ' + hint : loc.name}">
+                        <div class="location-icon">${loc.icon}</div>
+                        <div class="location-name">${loc.name}</div>
+                        ${locked ? `<div style="font-size:0.65em;color:#888;">🔒 ${hint}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getLocationUnlockRequirement(locationId) {
+            const requirements = {
+                'square': 0,
+                'montague': 0,
+                'capulet': 0,
+                'balcony': 1,
+                'church': 1,
+                'cell': 2,
+                'street': 0,
+                'tomb': 4
+            };
+            return requirements[locationId] || 0;
+        }
+        
+        function getUnlockHint(locationId) {
+            const hints = {
+                'balcony': 'Complete Act 1 story',
+                'church': 'Complete Act 1 story',
+                'cell': 'Complete Act 2 story',
+                'tomb': 'Complete Act 4 story'
+            };
+            return hints[locationId] || '';
+        }
+        
+        function visitLocation(locationId) {
+            const location = locations.find(l => l.id === locationId);
+            document.getElementById('location-name').textContent = location.name;
+            document.getElementById('location-quote').innerHTML = `"${location.quote}"<br><small>${location.quoteSource}</small>`;
+            
+            // Check if already played today
+            const playKey = `${locationId}_${gameState.storyProgress}`;
+            if (gameState.visitedLocations.includes(playKey)) {
+                document.getElementById('minigame-content').innerHTML = `
+                    <p style="text-align:center;color:#aaa;">You've already completed this challenge today!</p>
+                    <p style="text-align:center;">Come back after the next story chapter.</p>
+                `;
+            } else {
+                startMinigame(location);
+            }
+            
+            goToScreen('location-screen');
+        }
+        
+        // Minigames
+        function startMinigame(location) {
+            switch(location.minigame) {
+                case 'merchant':
+                case 'quiz':
+                    startQuiz(location);
+                    break;
+                case 'combat':
+                    startCombat(location);
+                    break;
+                case 'race':
+                    startRace(location);
+                    break;
+                case 'dance':
+                case 'memory':
+                    startMemory(location);
+                    break;
+                case 'potion':
+                    startPotion(location);
+                    break;
+            }
+        }
+        
+        // Quiz Minigame
+        function startQuiz(location) {
+            const questions = quizQuestions.sort(() => Math.random() - 0.5).slice(0, 3);
+            let currentQ = 0;
+            let score = 0;
+            
+            function renderQuestion() {
+                const q = questions[currentQ];
+                document.getElementById('minigame-content').innerHTML = `
+                    <p style="text-align:center;color:#aaa;">Question ${currentQ + 1} of ${questions.length}</p>
+                    <div class="quiz-question">${q.question}</div>
+                    <div class="quiz-options">
+                        ${q.options.map((opt, i) => `
+                            <div class="quiz-option" onclick="answerQuiz(${i}, ${q.correct})">${opt}</div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            window.answerQuiz = function(selected, correct) {
+                const options = document.querySelectorAll('.quiz-option');
+                options.forEach((opt, i) => {
+                    opt.style.pointerEvents = 'none';
+                    if (i === correct) opt.classList.add('correct');
+                    else if (i === selected && selected !== correct) opt.classList.add('wrong');
+                });
+                
+                if (selected === correct) score++;
+                
+                setTimeout(() => {
+                    currentQ++;
+                    if (currentQ < questions.length) {
+                        renderQuestion();
+                    } else {
+                        finishMinigame(location, score >= 2);
+                    }
+                }, 1500);
+            };
+            
+            renderQuestion();
+        }
+        
+        // Combat Minigame
+        function startCombat(location) {
+            let playerHP = 30 + gameState.attributes.health * 2;
+            let enemyHP = 25 + gameState.storyProgress * 5;
+            let defending = false;
+            
+            function updateHP() {
+                document.getElementById('player-hp').style.width = `${(playerHP / 50) * 100}%`;
+                document.getElementById('enemy-hp').style.width = `${(enemyHP / (25 + gameState.storyProgress * 5)) * 100}%`;
+            }
+            
+            document.getElementById('minigame-content').innerHTML = `
+                <p style="text-align:center;margin-bottom:10px;">Use Power (${gameState.attributes.power}) vs Challenge Rating ${6 + gameState.storyProgress}</p>
+                <div class="combat-arena">
+                    <div class="combatant player">${gameState.token.icon}</div>
+                    <div class="combatant enemy">👹</div>
+                    <div class="health-bar player"><div class="health-bar-fill" id="player-hp" style="width:100%"></div></div>
+                    <div class="health-bar enemy"><div class="health-bar-fill" id="enemy-hp" style="width:100%"></div></div>
+                </div>
+                <div class="combat-actions">
+                    <button class="combat-btn attack" onclick="combatAction('attack')">⚔️ Attack</button>
+                    <button class="combat-btn defend" onclick="combatAction('defend')">🛡️ Defend</button>
+                </div>
+            `;
+            
+            window.combatAction = function(action) {
+                const power = gameState.attributes.power;
+                const roll = Math.floor(Math.random() * 6) + 1;
+                const total = roll + power;
+                const enemyRoll = Math.floor(Math.random() * 6) + 1;
+                
+                if (action === 'attack') {
+                    if (total >= 8) {
+                        enemyHP -= (5 + Math.floor(power / 2));
+                    }
+                    if (enemyRoll >= 4) {
+                        playerHP -= 5;
+                    }
+                } else {
+                    if (enemyRoll >= 5) {
+                        playerHP -= 3;
+                    }
+                }
+                
+                updateHP();
+                
+                if (enemyHP <= 0) {
+                    finishMinigame(location, true);
+                } else if (playerHP <= 0) {
+                    finishMinigame(location, false);
+                }
+            };
+        }
+        
+        // Race Minigame
+        function startRace(location) {
+            let progress = 0;
+            let obstacleHit = 0;
+            let gameOver = false;
+            
+            document.getElementById('minigame-content').innerHTML = `
+                <p style="text-align:center;margin-bottom:10px;">Speed Challenge - Click or Press SPACE when obstacles appear!</p>
+                <div class="race-track" id="race-track">
+                    <div class="racer" id="racer" style="left:20px;">${gameState.token.icon}</div>
+                </div>
+                <div class="race-progress">
+                    <div class="race-progress-fill" id="race-progress-fill"></div>
+                </div>
+                <p style="text-align:center;margin-top:10px;">Press SPACE to jump over obstacles!</p>
+            `;
+            
+            const track = document.getElementById('race-track');
+            
+            window.jumpObstacle = function() {
+                document.getElementById('racer').style.transform = 'translateY(-50%) translateY(-30px)';
+                setTimeout(() => {
+                    document.getElementById('racer').style.transform = 'translateY(-50%)';
+                }, 300);
+            };
+            
+            window.onkeydown = function(e) {
+                if (e.code === 'Space' && !gameOver) {
+                    jumpObstacle();
+                }
+            };
+            
+            function spawnObstacle() {
+                if (gameOver) return;
+                
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.textContent = '🪨';
+                obstacle.style.top = Math.random() > 0.5 ? '30%' : '70%';
+                track.appendChild(obstacle);
+                
+                setTimeout(() => {
+                    if (obstacle.parentNode) {
+                        obstacle.remove();
+                    }
+                }, 2500);
+            }
+            
+            const gameLoop = setInterval(() => {
+                if (gameOver) {
+                    clearInterval(gameLoop);
+                    return;
+                }
+                
+                progress += 2 + gameState.attributes.speed / 3;
+                document.getElementById('race-progress-fill').style.width = `${Math.min(progress, 100)}%`;
+                
+                if (progress >= 100) {
+                    gameOver = true;
+                    finishMinigame(location, true);
+                    clearInterval(gameLoop);
+                }
+            }, 100);
+            
+            const obstacleLoop = setInterval(() => {
+                if (gameOver) {
+                    clearInterval(obstacleLoop);
+                    return;
+                }
+                spawnObstacle();
+            }, 1500);
+        }
+        
+        // Memory Minigame
+        function startMemory(location) {
+            const pattern = [];
+            let playerPattern = [];
+            let level = 1;
+            let isShowingPattern = false;
+            
+            function showPattern() {
+                isShowingPattern = true;
+                playerPattern = [];
+                
+                // Add new step to pattern
+                pattern.push(Math.floor(Math.random() * 9));
+                
+                let i = 0;
+                const showNext = () => {
+                    if (i < pattern.length) {
+                        highlightButton(pattern[i]);
+                        i++;
+                        setTimeout(showNext, 600);
+                    } else {
+                        isShowingPattern = false;
+                    }
+                };
+                showNext();
+            }
+            
+            function highlightButton(index) {
+                const btn = document.querySelectorAll('.pattern-btn')[index];
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), 400);
+            }
+            
+            document.getElementById('minigame-content').innerHTML = `
+                <p style="text-align:center;margin-bottom:10px;">Beauty Challenge - Watch and repeat the dance pattern!</p>
+                <div class="pattern-grid">
+                    ${[...Array(9)].map((_, i) => `
+                        <button class="pattern-btn" onclick="clickPattern(${i})">💃</button>
+                    `).join('')}
+                </div>
+                <p style="text-align:center;margin-top:15px;">Level: <span id="pattern-level">1</span></p>
+            `;
+            
+            window.clickPattern = function(index) {
+                if (isShowingPattern) return;
+                
+                highlightButton(index);
+                playerPattern.push(index);
+                
+                // Check if pattern is correct so far
+                const currentIndex = playerPattern.length - 1;
+                if (playerPattern[currentIndex] !== pattern[currentIndex]) {
+                    // Wrong!
+                    document.querySelectorAll('.pattern-btn')[index].classList.add('wrong');
+                    setTimeout(() => finishMinigame(location, level > 2), 1000);
+                    return;
+                }
+                
+                if (playerPattern.length === pattern.length) {
+                    // Level complete!
+                    level++;
+                    document.getElementById('pattern-level').textContent = level;
+                    if (level > 4) {
+                        finishMinigame(location, true);
+                    } else {
+                        setTimeout(showPattern, 1000);
+                    }
+                }
+            };
+            
+            setTimeout(showPattern, 1000);
+        }
+        
+        // Potion Minigame
+        function startPotion(location) {
+            const ingredients = ['🌹', '🌿', '💜', '⭐', '💧'];
+            let currentStep = 0;
+            let score = 0;
+            
+            function shuffle() {
+                return ingredients.sort(() => Math.random() - 0.5);
+            }
+            
+            const correctOrder = ingredients;
+            let displayOrder = shuffle();
+            
+            document.getElementById('minigame-content').innerHTML = `
+                <p style="text-align:center;margin-bottom:10px;">Intelligence Challenge - Brew the potion in the correct order!</p>
+                <div style="background:rgba(255,255,255,0.1);padding:15px;border-radius:10px;margin-bottom:15px;text-align:center;">
+                    <p style="color:#ffd700;font-size:0.95em;margin-bottom:8px;">📜 Friar's Recipe:</p>
+                    <p style="color:#aaa;font-size:0.85em;line-height:1.6;">
+                        "First, the <span style="color:#ff6b6b;">rose</span> of love's beginning,<br>
+                        Then <span style="color:#51cf66;">herbs</span> of wisdom, mixed with care,<br>
+                        <span style="color:#be8bff;">Violets</span> pure for Juliet's heart,<br>
+                        <span style="color:#ffd43b;">Stars</span> above to guide our art,<br>
+                        Last, the <span style="color:#74c0fc;">drops</span> of sleep so fair."
+                    </p>
+                </div>
+                <div class="pattern-grid" style="margin-top:20px;">
+                    ${displayOrder.map((ing, i) => `
+                        <button class="pattern-btn" onclick="addIngredient(${i})">${ing}</button>
+                    `).join('')}
+                </div>
+                <p style="text-align:center;margin-top:15px;">Progress: <span id="potion-progress">_ _ _ _ _</span></p>
+            `;
+            
+            window.addIngredient = function(index) {
+                const clicked = displayOrder[index];
+                const expected = correctOrder[currentStep];
+                
+                if (clicked === expected) {
+                    score++;
+                    currentStep++;
+                    document.getElementById('potion-progress').textContent += clicked + ' ';
+                    document.querySelectorAll('.pattern-btn')[index].classList.add('correct');
+                    
+                    if (currentStep >= correctOrder.length) {
+                        finishMinigame(location, true);
+                    } else {
+                        displayOrder = shuffle();
+                        const progress = '🌹🌿💜⭐💧'.substring(0, currentStep * 2) + ' _'.repeat(5 - currentStep);
+                        setTimeout(() => {
+                            document.getElementById('minigame-content').innerHTML = `
+                                <p style="text-align:center;margin-bottom:10px;">Intelligence Challenge - Brew the potion in the correct order!</p>
+                                <div style="background:rgba(255,255,255,0.1);padding:15px;border-radius:10px;margin-bottom:15px;text-align:center;">
+                                    <p style="color:#ffd700;font-size:0.95em;margin-bottom:8px;">📜 Friar's Recipe:</p>
+                                    <p style="color:#aaa;font-size:0.85em;line-height:1.6;">
+                                        "First, the <span style="color:#ff6b6b;">rose</span> of love's beginning,<br>
+                                        Then <span style="color:#51cf66;">herbs</span> of wisdom, mixed with care,<br>
+                                        <span style="color:#be8bff;">Violets</span> pure for Juliet's heart,<br>
+                                        <span style="color:#ffd43b;">Stars</span> above to guide our art,<br>
+                                        Last, the <span style="color:#74c0fc;">drops</span> of sleep so fair."
+                                    </p>
+                                </div>
+                                <div class="pattern-grid" style="margin-top:20px;">
+                                    ${displayOrder.map((ing, i) => `
+                                        <button class="pattern-btn" onclick="addIngredient(${i})">${ing}</button>
+                                    `).join('')}
+                                </div>
+                                <p style="text-align:center;margin-top:15px;">Progress: <span id="potion-progress">${progress}</span></p>
+                            `;
+                        }, 500);
+                    }
+                } else {
+                    document.querySelectorAll('.pattern-btn')[index].classList.add('wrong');
+                    setTimeout(() => finishMinigame(location, false), 1000);
+                }
+            };
+        }
+        
+        // Finish Minigame
+        function finishMinigame(location, success) {
+            const playKey = `${location.id}_${gameState.storyProgress}`;
+            
+            if (success) {
+                const reward = location.reward + (gameState.attributes[location.attribute] * 2);
+                gameState.gold += reward;
+                gameState.visitedLocations.push(playKey);
+                
+                document.getElementById('minigame-content').innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="font-size:4em;">🎉</div>
+                        <h3 style="color:#27ae60;">Victory!</h3>
+                        <p>You earned <span style="color:#ffd700;font-size:1.3em;">${reward} gold</span>!</p>
+                        <p>${location.attribute.charAt(0).toUpperCase() + location.attribute.slice(1)} +1</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('minigame-content').innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="font-size:4em;">😔</div>
+                        <h3 style="color:#e94560;">Try Again Next Time</h3>
+                        <p>The challenge was too difficult. Visit other locations to grow stronger!</p>
+                    </div>
+                `;
+            }
+            
+            updateStats();
+            renderLocations();
+        }
+        
+        // Shop
+        function renderShop() {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = shopItems.map(item => `
+                <div class="shop-item">
+                    <div class="shop-item-icon">${item.icon}</div>
+                    <div class="shop-item-name">${item.name}</div>
+                    <div class="shop-item-effect">${item.description}</div>
+                    <div class="shop-item-price">💰 ${item.price}</div>
+                    <button class="shop-item-btn" onclick="buyItem('${item.id}')" 
+                            ${gameState.gold < item.price ? 'disabled' : ''}>
+                        Buy
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function goToShop() {
+            renderShop();
+            goToScreen('shop-screen');
+        }
+        
+        function buyItem(itemId) {
+            const item = shopItems.find(i => i.id === itemId);
+            if (gameState.gold >= item.price) {
+                gameState.gold -= item.price;
+                
+                if (item.effect === 'story') {
+                    if (itemId === 'love_letter') {
+                        gameState.hasLoveLetter = true;
+                    } else if (itemId === 'peace_treaty') {
+                        gameState.hasPeaceTreaty = true;
+                    }
+                }
+                
+                if (!item.special) {
+                    gameState.inventory.push(item);
+                }
+                
+                updateStats();
+                renderShop();
+                alert(`You bought ${item.name}!`);
+            }
+        }
+        
+        // Inventory
+        function toggleInventory() {
+            renderInventory();
+            goToScreen('inventory-screen');
+        }
+        
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            let itemsHtml = gameState.inventory.map((item, i) => `
+                <div class="inventory-item">
+                    <span class="inventory-item-icon">${item.icon}</span>
+                    <span>${item.name}</span>
+                </div>
+            `).join('');
+            
+            if (gameState.hasPeaceTreaty) {
+                itemsHtml += `<div class="inventory-item"><span class="inventory-item-icon">📜</span> Peace Treaty</div>`;
+            }
+            if (gameState.hasLoveLetter) {
+                itemsHtml += `<div class="inventory-item"><span class="inventory-item-icon">💌</span> Love Letter</div>`;
+            }
+            
+            if (!itemsHtml) {
+                itemsHtml = '<p style="color:#aaa;text-align:center;width:100%;">Your backpack is empty!</p>';
+            }
+            
+            grid.innerHTML = itemsHtml;
+        }
+        
+        function useItem() {
+            if (gameState.inventory.length === 0) {
+                alert('No items to use!');
+                return;
+            }
+            
+            const item = gameState.inventory.shift();
+            gameState.attributes[item.effect] = Math.min(10, gameState.attributes[item.effect] + item.value);
+            updateStats();
+            alert(`Used ${item.name}! ${item.effect.charAt(0).toUpperCase() + item.effect.slice(1)} +${item.value}`);
+        }
+        
+        // Act Progress
+        function renderActProgress() {
+            const container = document.getElementById('act-progress');
+            container.innerHTML = [1,2,3,4,5].map(act => `
+                <div class="act-dot ${act === gameState.currentAct ? 'current' : ''} ${act < gameState.currentAct ? 'completed' : ''}">
+                    ${act < gameState.currentAct ? '✓' : act}
+                </div>
+            `).join('');
+        }
+        
+        // Story Advancement
+        function advanceStory() {
+            if (gameState.storyProgress >= storyScenes.length) {
+                showEnding();
+                return;
+            }
+            
+            const scene = storyScenes[gameState.storyProgress];
+            document.getElementById('act-progress').innerHTML = [1,2,3,4,5].map(act => `
+                <div class="act-dot ${act === scene.act ? 'current' : ''} ${act < scene.act ? 'completed' : ''}">
+                    ${act < scene.act ? '✓' : act}
+                </div>
+            `).join('');
+            
+            let choicesHtml = '';
+            scene.choice.options.forEach((opt, optIndex) => {
+                const canChoose = !opt.required || 
+                    (opt.required.includes('peace_treaty') && gameState.hasPeaceTreaty) ||
+                    (opt.required.includes('love_letter') && gameState.hasLoveLetter);
+                choicesHtml += `
+                    <button class="choice-btn" onclick="makeChoice(${optIndex})" ${!canChoose ? 'disabled style="opacity:0.5"' : ''}>
+                        ${opt.text} ${!canChoose ? '(Requires item)' : ''}
+                    </button>
+                `;
+            });
+            
+            document.getElementById('story-content').innerHTML = `
+                <div class="scene-header">
+                    <span class="scene-number">Act ${scene.act}, Scene ${scene.scene}</span>
+                    <span class="scene-title">${scene.title}</span>
+                </div>
+                <div class="scene-content">
+                    ${scene.content}
+                </div>
+                <div class="choices-container">
+                    <p style="margin-bottom:15px;color:#ffd700;">${scene.choice.prompt}</p>
+                    ${choicesHtml}
+                </div>
+            `;
+            
+            goToScreen('story-screen');
+        }
+        
+        function makeChoice(choiceIndex) {
+            const scene = storyScenes[gameState.storyProgress];
+            const choice = scene.choice.options[choiceIndex];
+            
+            // Roll dice
+            const roll = Math.floor(Math.random() * 6) + 1;
+            const attrValue = gameState.attributes[choice.attribute];
+            const total = roll + attrValue;
+            const challengeRating = 5 + gameState.storyProgress;
+            const success = total >= challengeRating;
+            
+            let resultHtml = `
+                <div class="dice-container">
+                    <div class="dice">🎲</div>
+                    <div class="dice-result">
+                        Roll: ${roll} + ${choice.attribute} ${attrValue} = ${total}<br>
+                        vs CR ${challengeRating}: ${success ? 'SUCCESS!' : 'Failed...'}
+                    </div>
+                </div>
+            `;
+            
+            if (success) {
+                resultHtml += `
+                    <p style="text-align:center;color:#27ae60;margin:20px 0;">
+                        ✨ ${choice.success} ✨
+                    </p>
+                `;
+            } else {
+                resultHtml += `
+                    <p style="text-align:center;color:#e94560;margin:20px 0;">
+                        The challenge proves too difficult. You must try harder next time.
+                    </p>
+                `;
+            }
+            
+            document.getElementById('story-content').innerHTML += resultHtml + `
+                <div class="nav-buttons" style="margin-top:20px;">
+                    <button class="btn btn-success" onclick="continueStory()">Continue →</button>
+                </div>
+            `;
+            
+            gameState.storyProgress++;
+            gameState.currentAct = storyScenes[Math.min(gameState.storyProgress, storyScenes.length - 1)].act;
+        }
+        
+        function continueStory() {
+            renderLocations();
+            renderActProgress();
+            goToScreen('game-screen');
+        }
+        
+        // Endings
+        function showEnding() {
+            let ending = '';
+            let endingClass = '';
+            
+            if (gameState.hasPeaceTreaty && gameState.hasLoveLetter) {
+                ending = 'PERFECT ENDING';
+                endingClass = 'ending-perfect';
+                endingContent = `
+                    <p>You did it! With the Peace Treaty and Love Letter, you unite the families!</p>
+                    <p>Romeo and Juliet live happily ever after. The feud between the Montagues and Capulets ends forever!</p>
+                    <div class="scene-quote">
+                        "A glooming peace this morning with it brings,<br>
+                        The sun for sorrow will not show his head.<br>
+                        Go hence, to have more talk of these sad things;<br>
+                        Some shall be pardoned, and some punished."<br>
+                        <small>— Prince Escalus, Act 5, Scene 3</small>
+                    </div>
+                    <p style="color:#ffd700;font-size:1.2em;margin-top:20px;">🏆 YOU SAVED THEM! 🏆</p>
+                `;
+            } else if (gameState.hasLoveLetter) {
+                ending = 'GOOD ENDING';
+                endingClass = 'ending-good';
+                endingContent = `
+                    <p>Juliet lives! Your Love Letter helped her survive, but Romeo's fate was already sealed.</p>
+                    <p>The Prince speaks: "All were punished, none pardoned." Juliet mourns Romeo but vowes to honor his memory.</p>
+                    <p>At least Juliet survives to tell their tale.</p>
+                    <p style="color:#27ae60;margin-top:20px;">💚 A bittersweet victory.</p>
+                `;
+            } else {
+                ending = 'TRAGIC ENDING';
+                endingClass = 'ending-tragic';
+                endingContent = `
+                    <p>As Shakespeare wrote it... The tragedy unfolds.</p>
+                    <div class="scene-quote">
+                        "For never was a story of more woe,<br>
+                        Than this of Juliet and her Romeo."<br>
+                        <small>— Prince Escalus, Act 5, Scene 3</small>
+                    </div>
+                    <p>Perhaps with better preparation, with the right items, their fate could have been different...</p>
+                    <p style="color:#e94560;margin-top:20px;">💔 The star-crossed lovers perish.</p>
+                `;
+            }
+            
+            document.getElementById('ending-content').innerHTML = `
+                <h1 class="ending-title ${endingClass}">${ending}</h1>
+                <div class="ending-content">${endingContent}</div>
+            `;
+            
+            goToScreen('ending-screen');
+        }
+        
+        // Restart Game
+        function restartGame() {
+            gameState = {
+                playerName: '',
+                token: '',
+                attributes: { power: 5, speed: 5, health: 5, intelligence: 5, beauty: 5 },
+                pointsRemaining: 5,
+                gold: 20,
+                inventory: [],
+                currentAct: 1,
+                visitedLocations: [],
+                dailyGamesPlayed: 0,
+                storyProgress: 0,
+                hasPeaceTreaty: false,
+                hasLoveLetter: false,
+                julietHealth: 100,
+                romeoHealth: 100
+            };
+            
+            document.getElementById('player-name').value = '';
+            document.getElementById('points-remaining').textContent = '5';
+            renderAttributeAllocation();
+            renderLocations();
+            renderActProgress();
+            goToScreen('title-screen');
+        }
+        
+        // Name input listener
+        document.getElementById('player-name').addEventListener('input', checkCreateCharacter);
+        
+        // Initialize
+        initGame();
+    </script>
+</body>
+</html>
