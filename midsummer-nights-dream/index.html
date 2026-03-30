@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Midsummer Night's Dream - Interactive Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2d1b4e;
+            --secondary: #6b4c9a;
+            --accent: #ffd700;
+            --fairy-green: #4a7c59;
+            --magic-purple: #9b59b6;
+            --forest: #228b22;
+            --gold: #daa520;
+            --bg-dark: #1a0a2e;
+            --text-light: #f0e6ff;
+            --panel-bg: rgba(45, 27, 78, 0.95);
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--primary) 50%, #1a3a1a 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Title Screen */
+        .title-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .title-screen h1 {
+            font-size: 3rem;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .title-screen .subtitle {
+            font-size: 1.5rem;
+            color: var(--fairy-green);
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+        
+        .title-art {
+            font-size: 80px;
+            margin: 30px 0;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--secondary), var(--magic-purple));
+            border: 2px solid var(--accent);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--fairy-green), #2d5a3d);
+            border-color: #90EE90;
+        }
+        
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* Character Creation */
+        .creation-panel {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .creation-panel h2 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .input-group {
+margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: inherit;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        /* Token Selection */
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .token-option {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .token-option:hover {
+            border-color: var(--magic-purple);
+            transform: scale(1.05);
+        }
+        
+        .token-option.selected {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .token-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 5px;
+        }
+        
+        .token-name {
+            font-size: 0.75rem;
+            text-align: center;
+            color: var(--text-light);
+        }
+        
+        /* Attribute Allocation */
+        .attributes-panel {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .attribute-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .attribute-name {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        
+        .attribute-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .attribute-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .attr-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .attr-btn:hover:not(:disabled) {
+            background: var(--accent);
+            color: var(--primary);
+        }
+        
+        .attr-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .points-remaining {
+            text-align: center;
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-top: 20px;
+        }
+        
+        /* Main Game UI */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid var(--secondary);
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .player-token {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .player-details h3 {
+            color: var(--accent);
+        }
+        
+        .player-details p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .stat-icon {
+            font-size: 1.2rem;
+        }
+        
+        /* Map */
+        .map-container {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--forest);
+            margin-bottom: 20px;
+        }
+        
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .location-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .location-card.current {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+        }
+        
+        .location-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .location-name {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        
+        .location-desc {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .location-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--fairy-green);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        /* Location Detail */
+        .location-detail {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .location-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        /* Story Panel */
+        .story-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .story-panel .act-scene {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .story-panel .quote {
+            font-style: italic;
+            color: #ffd700;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        .story-panel p {
+            line-height: 1.6;
+        }
+        
+        /* Mini Games */
+        .mini-games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .mini-game-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .mini-game-card:hover:not(.disabled) {
+            transform: translateY(-5px);
+            border-color: var(--magic-purple);
+        }
+        
+        .mini-game-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .mini-game-card.completed {
+            border-color: var(--fairy-green);
+            background: rgba(74, 124, 89, 0.2);
+        }
+        
+        .mini-game-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .mini-game-name {
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+        
+        .mini-game-reward {
+            font-size: 0.85rem;
+            color: var(--gold);
+        }
+        
+        .mini-game-attr {
+            font-size: 0.8rem;
+            color: var(--magic-purple);
+            margin-top: 5px;
+        }
+        
+        /* Shop */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .shop-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        
+        .shop-item:hover {
+            border-color: var(--gold);
+        }
+        
+        .shop-item.owned {
+            border-color: var(--fairy-green);
+            background: rgba(74, 124, 89, 0.2);
+        }
+        
+        .shop-item-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item-name {
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        
+        .shop-item-price {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        
+        /* Trivia Quiz */
+        .quiz-container {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--magic-purple);
+            margin-bottom: 20px;
+        }
+        
+        .quiz-question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--magic-purple);
+        }
+        
+        .quiz-option.correct {
+            border-color: var(--fairy-green);
+            background: rgba(74, 124, 89, 0.3);
+        }
+        
+        .quiz-option.wrong {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.3);
+        }
+        
+        .quiz-progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .quiz-dot.completed {
+            background: var(--fairy-green);
+        }
+        
+        .quiz-dot.current {
+            background: var(--accent);
+        }
+        
+        /* Dice Roller */
+        .dice-container {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .dice {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #fff, #ddd);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s ease;
+        }
+        
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .dice-result {
+            font-size: 1.5rem;
+            margin: 20px 0;
+        }
+        
+        .dice-breakdown {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+        
+        /* Combat Challenge */
+.challenge-container {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--magic-purple);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .challenge-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .challenge-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .challenge-rating {
+            font-size: 2rem;
+            color: var(--gold);
+        }
+        
+        .challenge-attr {
+            color: var(--magic-purple);
+            margin-top: 10px;
+        }
+        
+        /* Memory Game */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        .memory-card {
+            aspect-ratio: 1;
+            background: var(--secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .memory-card:hover:not(.flipped) {
+            background: var(--magic-purple);
+        }
+        
+        .memory-card.flipped {
+            background: var(--accent);
+            transform: rotateY(180deg);
+        }
+        
+        .memory-card.matched {
+            background: var(--fairy-green);
+            cursor: default;
+        }
+        
+        /* Inventory */
+        .inventory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .inventory-item .count {
+            background: var(--accent);
+            color: var(--primary);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        /* Dialogue */
+        .dialogue-container {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .dialogue-npc {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .dialogue-npc .avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .dialogue-npc .name {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+        
+        .dialogue-text {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        
+        .dialogue-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .dialogue-choice {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        .dialogue-choice:hover {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .dialogue-choice .attr-hint {
+            font-size: 0.8rem;
+            color: var(--magic-purple);
+            margin-top: 5px;
+        }
+        
+        /* Day/Time System */
+        .day-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        
+        .day-number {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+        
+        .games-remaining {
+            color: var(--fairy-green);
+        }
+        
+        /* Ending Screen */
+        .ending-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .ending-title {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .ending-subtitle {
+            font-size: 1.5rem;
+            color: var(--fairy-green);
+            margin-bottom: 30px;
+        }
+        
+        .ending-art {
+            font-size: 100px;
+            margin: 30px 0;
+        }
+        
+        .stats-summary {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 500px;
+            text-align: left;
+        }
+        
+        .stats-summary h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Event Log */
+        .event-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        
+        .event-log .event {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .event-log .event.success {
+            color: var(--fairy-green);
+        }
+        
+        .event-log .event.failure {
+            color: #e74c3c;
+        }
+        
+        .event-log .event.gold {
+            color: var(--gold);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .token-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .attributes-panel {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .map-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .location-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .memory-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid var(--accent);
+            text-align: center;
+        }
+        
+        .modal-title {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .modal-text {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen active">
+            <div class="title-screen">
+                <div class="title-art">&#10052;</div>
+                <h1>A Midsummer Night's Dream</h1>
+                <p class="subtitle">An Interactive Adventure</p>
+                <p style="margin-bottom: 30px; opacity: 0.8;">
+                    Enter the enchanted forest of Athens, where fairies play tricks on mortals,<br>
+                    lovers face impossible choices, and a group of mechanicals prepare<br>
+                    the most tragic comedy ever staged.
+                </p>
+                <button class="btn" onclick="showScreen('creation-screen')">Begin Your Adventure</button>
+                <button class="btn btn-secondary" onclick="loadGame()">Continue Saved Game</button>
+            </div>
+        </div>
+        
+        <!-- Character Creation -->
+        <div id="creation-screen" class="screen">
+            <div class="creation-panel">
+                <h2>&#10052; Character Creation &#10052;</h2>
+                
+                <div class="input-group">
+                    <label>Enter Your Character's Name:</label>
+                    <input type="text" id="player-name" placeholder="Enter name..." maxlength="20">
+                </div>
+                
+                <h3 style="color: var(--accent); margin: 20px 0;">Choose Your Token</h3>
+                <p style="opacity: 0.8; margin-bottom: 15px;">Select the character you wish to play as:</p>
+                <div class="token-grid" id="token-grid"></div>
+                
+                <h3 style="color: var(--accent); margin: 20px 0;">Allocate Your Attributes</h3>
+                <p style="opacity: 0.8; margin-bottom: 15px;">
+                    You have <strong>5 points</strong> to distribute. Each point adds +1 to an attribute.
+                    Attributes affect dice roll outcomes in challenges.
+                </p>
+                <div class="attributes-panel" id="attributes-panel"></div>
+                <p class="points-remaining">Points Remaining: <span id="points-left">5</span></p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="showScreen('title-screen')">Back</button>
+                    <button class="btn" id="start-btn" onclick="startGame()" disabled>Start Adventure</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="player-info">
+                    <div class="player-token" id="header-token"></div>
+                    <div class="player-details">
+                        <h3 id="header-name">Player</h3>
+                        <p id="header-token-name">Token</p>
+                    </div>
+                </div>
+                <div class="day-info">
+                    <span class="day-number" id="day-display">Day 1</span>
+                    <span class="games-remaining" id="games-display">5 games remaining</span>
+                </div>
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">&#9733;</span>
+                        <span id="gold-display">20</span> Gold
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">&#9829;</span>
+                        <span id="health-display">100</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="location-detail" id="main-area">
+                <div class="location-header">
+                    <h2 id="location-title">The Kingdom of Athens</h2>
+                    <button class="btn btn-small btn-secondary" onclick="showMap()">View Map</button>
+                </div>
+                <div id="location-content"></div>
+            </div>
+            
+            <div class="map-container" id="map-container" style="display: none;">
+                <h2 style="color: var(--accent); text-align: center;">The Realm of Athens</h2>
+                <p style="text-align: center; opacity: 0.8; margin-bottom: 20px;">
+                    Click a location to explore. Each location offers unique challenges and rewards.
+                </p>
+                <div class="map-grid" id="map-grid"></div>
+            </div>
+        </div>
+        
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-progress" id="quiz-progress"></div>
+                <h2 style="color: var(--accent); text-align: center;" id="quiz-title">Trivia Challenge</h2>
+                <p style="text-align: center; margin-bottom: 10px;" id="quiz-attr">Tests your Wisdom!</p>
+                <div class="quiz-question" id="quiz-question"></div>
+                <div class="quiz-options" id="quiz-options"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="returnFromMiniGame()">Back to Location</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dice Challenge Screen -->
+        <div id="challenge-screen" class="screen">
+            <div class="challenge-container">
+                <h2 class="challenge-title" id="challenge-title">Challenge!</h2>
+                <div class="challenge-info">
+                    <p id="challenge-desc">Face the challenge!</p>
+                    <p class="challenge-rating">CR: <span id="challenge-cr">8</span></p>
+                    <p class="challenge-attr">Attribute: <span id="challenge-attr">Might</span></p>
+                </div>
+                <div class="dice-container">
+                    <div class="dice" id="dice">?</div>
+                    <p class="dice-breakdown" id="dice-breakdown"></p>
+                    <p class="dice-result" id="dice-result"></p>
+                    <button class="btn" id="roll-btn" onclick="rollDice()">Roll the Dice!</button>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" id="back-from-challenge" onclick="returnFromMiniGame()">Back to Location</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Memory Game Screen -->
+        <div id="memory-screen" class="screen">
+            <div class="quiz-container">
+                <h2 style="color: var(--accent); text-align: center;">Quote Memory Match</h2>
+                <p style="text-align: center; margin-bottom: 10px;" id="memory-attr">Tests your Cunning!</p>
+                <p style="text-align: center;" id="memory-moves">Moves: 0</p>
+                <div class="memory-grid" id="memory-grid"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="returnFromMiniGame()">Back to Location</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dialogue Screen -->
+        <div id="dialogue-screen" class="screen">
+            <div class="dialogue-container">
+                <div class="dialogue-npc">
+                    <div class="avatar" id="dialogue-avatar">&#128122;</div>
+                    <p class="name" id="dialogue-name">NPC Name</p>
+                </div>
+                <div class="story-panel" id="dialogue-story"></div>
+                <div class="dialogue-text" id="dialogue-text"></div>
+                <div class="dialogue-choices" id="dialogue-choices"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="returnFromMiniGame()">Back to Location</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen">
+            <div class="quiz-container">
+                <h2 style="color: var(--accent); text-align: center;" id="shop-title">Fairy Market</h2>
+                <p style="text-align: center; margin-bottom: 20px;">Your Gold: <span id="shop-gold">0</span></p>
+                <div class="shop-grid" id="shop-grid"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="returnFromMiniGame()">Back to Location</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ending Screen -->
+        <div id="ending-screen" class="screen">
+            <div class="ending-screen">
+                <div class="ending-art" id="ending-art">&#10052;</div>
+                <h1 class="ending-title" id="ending-title">The End</h1>
+                <p class="ending-subtitle" id="ending-subtitle">Your journey concludes...</p>
+                <div class="story-panel" id="ending-story"></div>
+                <div class="stats-summary" id="stats-summary"></div>
+                <button class="btn" onclick="newGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Result Modal -->
+    <div class="modal" id="result-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title">Result</h2>
+            <p class="modal-text" id="modal-text"></p>
+            <button class="btn" onclick="closeModal()">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GAME DATA ====================
+        const CHARACTERS = [
+            { id: 'hermia', name: 'Hermia', icon: '&#128526;', desc: 'Athenian maiden in love' },
+            { id: 'lysander', name: 'Lysander', icon: '&#128526;', desc: 'Young Athenian lover' },
+            { id: 'helena', name: 'Helena', icon: '&#128522;', desc: 'Hermia\'s friend, loves Demetrius' },
+            { id: 'demetrius', name: 'Demetrius', icon: '&#128526;', desc: 'Athenian lord' },
+            { id: 'oberon', name: 'Oberon', icon: '&#128007;', desc: 'King of Fairies' },
+            { id: 'titania', name: 'Titania', icon: '&#128128;', desc: 'Queen of Fairies' },
+            { id: 'puck', name: 'Puck', icon: '&#128123;', desc: 'Robin Goodfellow' },
+            { id: 'bottom', name: 'Bottom', icon: '&#129499;', desc: 'The weaver' },
+            { id: 'quince', name: 'Quince', icon: '&#129500;', desc: 'The carpenter' },
+            { id: 'flute', name: 'Flute', icon: '&#129345;', desc: 'Bellows-mender' },
+            { id: 'starveling', name: 'Starveling', icon: '&#129492;', desc: 'The tailor' },
+            { id: 'snug', name: 'Snug', icon: '&#129516;', desc: 'The joiner' }
+        ];
+
+        const LOCATIONS = [
+            {
+                id: 'court',
+                name: 'Theseus\'s Court',
+                icon: '&#127943;',
+                desc: 'The royal palace of Athens',
+                actRef: 'Act 1, Scene 1',
+                quote: '"The course of true love never did run smooth."',
+                miniGames: ['trivia', 'charm'],
+                shop: true
+            },
+            {
+                id: 'forest',
+                name: 'The Enchanted Forest',
+                icon: '&#127793;',
+                desc: 'Where fairies dwell and magic rules',
+                actRef: 'Act 2, Scene 1-2',
+                quote: '"Lord, what fools these mortals be!"',
+                miniGames: ['memory', 'dice'],
+                shop: false
+            },
+            {
+                id: 'bower',
+                name: 'Titania\'s Bower',
+                icon: '&#127800;',
+                desc: 'The fairy queen\'s secret garden',
+                actRef: 'Act 2, Scene 2',
+                quote: '"I know a bank where the wild thyme blows."',
+                miniGames: ['dialogue', 'charm'],
+                shop: true
+            },
+            {
+                id: 'workshop',
+                name: 'Bottom\'s Workshop',
+                icon: '&#128295;',
+                desc: 'Where the mechanicals prepare',
+                actRef: 'Act 1, Scene 2',
+                quote: '"That will ask some tears in the true performing of it."',
+                miniGames: ['trivia', 'dice'],
+                shop: true
+            },
+            {
+                id: 'amphitheater',
+                name: 'The Amphitheater',
+                icon: '&#127916;',
+                desc: 'The final performance awaits',
+                actRef: 'Act 5, Scene 1',
+                quote: '"The lunatic, the lover, and the poet are of imagination all compact."',
+                miniGames: ['finale'],
+                shop: false,
+                isEndLocation: true
+            }
+        ];
+
+        const QUIZ_QUESTIONS = [
+            {
+                q: "Who does Hermia love in the play?",
+                options: ["Demetrius", "Lysander", "Bottom", "Oberon"],
+                correct: 1,
+                ref: "Act 1, Scene 1"
+            },
+            {
+                q: "What does Egeus request Theseus to do about Hermia?",
+                options: ["Reward her", "Banish her", "Execute her right", "Marry her"],
+                correct: 2,
+                ref: "Act 1, Scene 1"
+            },
+            {
+                q: "Who is the King of the Fairies?",
+                options: ["Puck", "Titania", "Oberon", "Theseus"],
+                correct: 2,
+                ref: "Act 2, Scene 1"
+            },
+            {
+                q: "What flower does Oberon want for his magic potion?",
+                options: ["Rose", "Love-in-idleness", "Lily", "Daisy"],
+                correct: 1,
+                ref: "Act 2, Scene 1"
+            },
+            {
+                q: "Who plays the lion in the mechanicals' play?",
+                options: ["Bottom", "Flute", "Starveling", "Snug"],
+                correct: 3,
+                ref: "Act 1, Scene 2"
+            },
+            {
+                q: "What character does Bottom play in the mechanicals' play?",
+                options: ["Lion", "Thisbe", "Pyramus", "Wall"],
+                correct: 2,
+                ref: "Act 1, Scene 2"
+            },
+            {
+                q: "Who does Helena love?",
+                options: ["Lysander", "Bottom", "Demetrius", "Theseus"],
+                correct: 2,
+                ref: "Act 1, Scene 1"
+            },
+            {
+                q: "What does Puck accidentally do with the love potion?",
+                options: ["Gives it to Titania", "Puts it on Demetrius", "Puts it on Lysander instead of Demetrius", "Spills it"],
+                correct: 2,
+                ref: "Act 2, Scene 2"
+            },
+            {
+                q: "What animal head does Puck give Bottom?",
+                options: ["Lion", "Wolf", "Ass (donkey)", "Horse"],
+                correct: 2,
+                ref: "Act 3, Scene 1"
+            },
+            {
+                q: "What is the name of Theseus's Amazon bride?",
+                options: ["Hermia", "Helena", "Hippolyta", "Titania"],
+                correct: 2,
+                ref: "Act 1, Scene 1"
+            }
+        ];
+
+        const MEMORY_CARDS = [
+            { quote: '"The course of true love never did run smooth."', char: 'Lysander', match: 0 },
+            { quote: '"Lord, what fools these mortals be!"', char: 'Puck', match: 1 },
+            { quote: '"I know a bank where the wild thyme blows."', char: 'Oberon', match: 2 },
+            { quote: '"Through the forest have I gone."', char: 'Helena', match: 3 },
+            { quote: '"Lord of the fairy ring"', char: 'Puck', match: 4 },
+            { quote: '"Bless thee, Bottom! Blessed be thy ways!"', char: 'Titania', match: 5 },
+            { quote: '"The lunatic, the lover, and the poet"', char: 'Theseus', match: 6 },
+            { quote: '"Love looks not with the eyes"', char: 'Hermia', match: 7 }
+        ];
+
+        const SHOP_ITEMS = [
+            { id: 'flower', name: 'Love-in-idleness', icon: '&#127803;', price: 50, desc: 'A magical flower with power over love', effect: 'Required for Royal Blessing ending' },
+            { id: 'dust', name: 'Magic Dust', icon: '&#10024;', price: 30, desc: 'Grants +2 to any one roll', consumable: true, effect: '+2 to any roll' },
+            { id: 'mask', name: 'Bottom\'s Mask', icon: '&#127917;', price: 40, desc: 'A theatrical mask from the play', effect: '+1 Charm permanently' },
+            { id: 'script', name: 'Play Script', icon: '&#128196;', price: 25, desc: 'The Pyramus and Thisbe script', effect: 'Required for Amphitheater access' }
+        ];
+
+        const DIALOGUES = {
+            forest: [
+                {
+                    npc: 'puck',
+                    npcName: 'Puck (Robin Goodfellow)',
+                    npcIcon: '&#128123;',
+                    story: { act: 'Act 2, Scene 1', text: 'Puck appears in a puff of smoke, mischief gleaming in his eyes.' },
+                    text: '"What, art thou thou art a spirit of fire and air? Or art thou one of Fortune\'s men? Tell me, mortal, what seek ye in this enchanted wood?"',
+                    choices: [
+                        { text: '"I seek adventure and glory!"', attr: 'Might', successRate: 7 },
+                        { text: '"I wish to learn the ways of the fair folk."', attr: 'Cunning', successRate: 6 },
+                        { text: '"I... I got lost, good sir fairy."', attr: 'Charm', successRate: 8 }
+                    ]
+                },
+                {
+                    npc: 'fairy',
+                    npcName: 'A Wandering Fairy',
+                    npcIcon: '&#10047;',
+                    story: { act: 'Act 2, Scene 2', text: 'A small fairy flutters nearby, curious about the mortal visitor.' },
+                    text: '"A mortal in the woods! Oh my! Queen Titania does not usually welcome your kind. What excuse shall I give her for your presence?"',
+                    choices: [
+                        { text: '"Tell her I bring news from Oberon."', attr: 'Cunning', successRate: 8 },
+                        { text: '"I come with respect and humility."', attr: 'Charm', successRate: 6 },
+                        { text: '"I fear no fairy queen!"', attr: 'Might', successRate: 9 }
+                    ]
+                }
+            ],
+            bower: [
+                {
+                    npc: 'titania',
+                    npcName: 'Titania, Queen of Fairies',
+                    npcIcon: '&#128128;',
+                    story: { act: 'Act 2, Scene 2', text: 'Titania sleeps amidst a bed of flowers, attended by her fairy retinue.' },
+                    text: '"Welcome, mortal. The moonlight shows you to me like a dream. Tell me, what brings one of mortal clay to my bower? Speak softly, for this is a place of enchantment."',
+                    choices: [
+                        { text: '"Your Majesty, I seek your blessing."', attr: 'Charm', successRate: 6 },
+                        { text: '"I wish to witness your beauty firsthand."', attr: 'Charm', successRate: 7 },
+                        { text: '"I come to aid in matters of love."', attr: 'Wisdom', successRate: 5 }
+                    ]
+                }
+            ],
+            court: [
+                {
+                    npc: 'theseus',
+                    npcName: 'Theseus, Duke of Athens',
+                    npcIcon: '&#127941;',
+                    story: { act: 'Act 1, Scene 1', text: 'Theseus sits upon his throne, preparing for his upcoming wedding to Hippolyta.' },
+                    text: '"Well said, my good Athenian. The moon rises on our wedding day approaches. What brings you to my court? Speak plainly."',
+                    choices: [
+                        { text: '"Your Grace, I seek your wisdom."', attr: 'Wisdom', successRate: 6 },
+                        { text: '"I wish to pledge my service to Athens."', attr: 'Might', successRate: 7 },
+                        { text: '"I come to pay my respects."', attr: 'Charm', successRate: 5 }
+                    ]
+                }
+            ],
+            workshop: [
+                {
+                    npc: 'bottom',
+                    npcName: 'Bottom the Weaver',
+                    npcIcon: '&#129499;',
+                    story: { act: 'Act 4, Scene 2', text: 'Bottom sits at his workbench, rehearsing his lines for Pyramus.' },
+                    text: '"The pyramid! No, the most villainous! When my cue comes, I shall thunder upon their heads such a line that the very mountains will weep. Art thou come to hear my performance?"',
+                    choices: [
+                        { text: '"Indeed! Your talent must be legendary!"', attr: 'Charm', successRate: 6 },
+                        { text: '"Let me help you practice."', attr: 'Wisdom', successRate: 5 },
+                        { text: '"I... actually came to see your work."', attr: 'Cunning', successRate: 7 }
+                    ]
+                }
+            ]
+        };
+
+        const CHALLENGES = {
+            forest: [
+                { name: 'Wild Fairy', desc: 'A mischievous fairy blocks your path!', cr: 7, attr: 'Might', success: 'You defeat the fairy spirit!', fail: 'The fairy zaps you with magic!' },
+                { name: 'Enchanted Thorns', desc: 'Thorny vines block your way through the forest.', cr: 6, attr: 'Cunning', success: 'You find a path through the thorns!', fail: 'The thorns scratch you painfully!' }
+            ],
+            court: [
+                { name: 'Royal Guard', desc: 'A guard challenges your right to enter.', cr: 7, attr: 'Might', success: 'You convince the guard of your worth!', fail: 'The guard turns you away!' },
+                { name: 'Court Riddle', desc: 'A scholar poses a riddle from ancient Greece.', cr: 8, attr: 'Wisdom', success: 'Your wisdom solves the riddle!', fail: 'The riddle confounds you!' }
+            ],
+            bower: [
+                { name: 'Fairy Curse', desc: 'Titania\'s magic attempts to curse you.', cr: 8, attr: 'Vitality', success: 'You resist the fairy magic!', fail: 'You feel enchanted...' },
+                { name: 'Love\'s Labyrinth', desc: 'Navigate the maze of love magic.', cr: 7, attr: 'Cunning', success: 'You resist the enchantment!', fail: 'Love magic confuses you!' }
+            ],
+            workshop: [
+                { name: 'Heavy Props', desc: 'Move the theatrical props for the play.', cr: 6, attr: 'Might', success: 'You easily lift the props!', fail: 'The props are too heavy!' },
+                { name: 'Theatrical Debate', desc: 'Argue about the best way to play Pyramus.', cr: 7, attr: 'Charm', success: 'You win the theatrical debate!', fail: 'The mechanicals don\'t agree with you!' }
+            ]
+        };
+
+        // ==================== GAME STATE ====================
+        let gameState = {
+            player: {
+                name: '',
+                token: null,
+                attributes: {
+                    Might: 5,
+                    Cunning: 5,
+                    Vitality: 5,
+                    Wisdom: 5,
+                    Charm: 5
+                },
+                gold: 20,
+                health: 100,
+                items: {}
+            },
+            day: 1,
+            gamesPlayed: 0,
+            gamesPerDay: 5,
+            currentLocation: null,
+            completedMiniGames: [],
+            storyFlags: {
+                helpedPuck: false,
+                metTitania: false,
+                metTheseus: false,
+                helpedBottom: false,
+                attendedPerformance: false
+            },
+            totalGoldEarned: 0,
+            challengesWon: 0,
+            challengesLost: 0,
+            triviaCorrect: 0,
+            triviaTotal: 0
+        };
+
+        let selectedToken = null;
+        let attributePoints = 5;
+        let currentChallenge = null;
+        let currentQuiz = null;
+        let quizIndex = 0;
+        let memoryFlipped = [];
+        let memoryMoves = 0;
+        let memoryMatches = 0;
+        let currentDialogue = null;
+        let currentDialogueIndex = 0;
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function rollD6() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function getAttributeModifier(attr) {
+            return gameState.player.attributes[attr] - 5;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-text').textContent = text;
+            document.getElementById('result-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').classList.remove('active');
+        }
+
+        // ==================== CHARACTER CREATION ====================
+        function initCreation() {
+            // Initialize token grid
+            const tokenGrid = document.getElementById('token-grid');
+            CHARACTERS.forEach(char => {
+                const tokenDiv = document.createElement('div');
+                tokenDiv.className = 'token-option';
+                tokenDiv.dataset.id = char.id;
+                tokenDiv.innerHTML = `
+                    <div class="token-icon">${char.icon}</div>
+                    <span class="token-name">${char.name}</span>
+                `;
+                tokenDiv.onclick = () => selectToken(char);
+                tokenGrid.appendChild(tokenDiv);
+            });
+
+            // Initialize attribute panel
+            const attrPanel = document.getElementById('attributes-panel');
+            const attrs = ['Might', 'Cunning', 'Vitality', 'Wisdom', 'Charm'];
+            attrs.forEach(attr => {
+                const attrCard = document.createElement('div');
+                attrCard.className = 'attribute-card';
+                attrCard.innerHTML = `
+                    <div class="attribute-name">${attr}</div>
+                    <div class="attribute-value" id="attr-${attr}">5</div>
+                    <div class="attribute-controls">
+                        <button class="attr-btn" onclick="decreaseAttr('${attr}')">-</button>
+                        <button class="attr-btn" onclick="increaseAttr('${attr}')">+</button>
+                    </div>
+                `;
+                attrPanel.appendChild(attrCard);
+            });
+
+            // Add name input listener
+            document.getElementById('player-name').addEventListener('input', checkCanStart);
+        }
+
+        function selectToken(char) {
+            document.querySelectorAll('.token-option').forEach(t => t.classList.remove('selected'));
+            document.querySelector(`[data-id="${char.id}"]`).classList.add('selected');
+            selectedToken = char;
+            checkCanStart();
+        }
+
+        function increaseAttr(attr) {
+            if (attributePoints > 0) {
+                gameState.player.attributes[attr]++;
+                document.getElementById(`attr-${attr}`).textContent = gameState.player.attributes[attr];
+                attributePoints--;
+                document.getElementById('points-left').textContent = attributePoints;
+                updateAttrButtons();
+            }
+        }
+
+        function decreaseAttr(attr) {
+            if (gameState.player.attributes[attr] > 5) {
+                gameState.player.attributes[attr]--;
+                document.getElementById(`attr-${attr}`).textContent = gameState.player.attributes[attr];
+                attributePoints++;
+                document.getElementById('points-left').textContent = attributePoints;
+                updateAttrButtons();
+            }
+        }
+
+        function updateAttrButtons() {
+            const attrs = ['Might', 'Cunning', 'Vitality', 'Wisdom', 'Charm'];
+            attrs.forEach(attr => {
+                const buttons = document.querySelectorAll(`#attr-${attr}`)[0].parentElement.querySelectorAll('.attr-btn');
+                buttons[0].disabled = gameState.player.attributes[attr] <= 5;
+                buttons[1].disabled = attributePoints <= 0;
+            });
+        }
+
+        function checkCanStart() {
+            const name = document.getElementById('player-name').value.trim();
+            const canStart = name.length > 0 && selectedToken !== null;
+            document.getElementById('start-btn').disabled = !canStart;
+        }
+
+        function startGame() {
+            gameState.player.name = document.getElementById('player-name').value.trim();
+            gameState.player.token = selectedToken;
+            
+            // Reset game state
+            gameState.day = 1;
+            gameState.gamesPlayed = 0;
+            gameState.currentLocation = 'court';
+            gameState.completedMiniGames = [];
+            
+            updateHeader();
+            showMap();
+            showScreen('game-screen');
+            saveGame();
+        }
+
+        // ==================== MAIN GAME UI ====================
+        function updateHeader() {
+            document.getElementById('header-token').innerHTML = gameState.player.token.icon;
+            document.getElementById('header-name').textContent = gameState.player.name;
+            document.getElementById('header-token-name').textContent = gameState.player.token.name;
+            document.getElementById('gold-display').textContent = gameState.player.gold;
+            document.getElementById('health-display').textContent = gameState.player.health;
+            document.getElementById('day-display').textContent = `Day ${gameState.day}`;
+            document.getElementById('games-display').textContent = `${gameState.gamesPerDay - gameState.gamesPlayed} games remaining`;
+        }
+
+        function showMap() {
+            document.getElementById('map-container').style.display = 'block';
+            document.getElementById('main-area').style.display = 'none';
+            
+            const mapGrid = document.getElementById('map-grid');
+            mapGrid.innerHTML = '';
+            
+            LOCATIONS.forEach(loc => {
+                const isUnlocked = loc.id !== 'amphitheater' || gameState.player.items['script'];
+                const isCurrent = gameState.currentLocation === loc.id;
+                
+                const card = document.createElement('div');
+                card.className = `location-card ${isCurrent ? 'current' : ''} ${!isUnlocked ? 'disabled' : ''}`;
+                card.innerHTML = `
+                    <div class="location-badge">${loc.actRef}</div>
+                    <div class="location-icon">${loc.icon}</div>
+                    <div class="location-name">${loc.name}</div>
+                    <div class="location-desc">${loc.desc}</div>
+                    ${!isUnlocked ? '<p style="color: #e74c3c; font-size: 0.8rem; margin-top: 5px;">Requires Play Script</p>' : ''}
+                `;
+                
+                if (isUnlocked) {
+                    card.onclick = () => enterLocation(loc.id);
+                }
+                
+                mapGrid.appendChild(card);
+            });
+        }
+
+        function enterLocation(locId) {
+            gameState.currentLocation = locId;
+            const loc = LOCATIONS.find(l => l.id === locId);
+            
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('main-area').style.display = 'block';
+            document.getElementById('location-title').textContent = loc.name;
+            
+            let content = `
+                <div class="story-panel">
+                    <p class="act-scene">${loc.actRef}</p>
+                    <p class="quote">${loc.quote}</p>
+                    <p>${loc.desc}</p>
+                </div>
+                
+                <h3 style="color: var(--accent); margin: 20px 0;">Mini-Games</h3>
+                <div class="mini-games-grid">
+            `;
+            
+            loc.miniGames.forEach((game, idx) => {
+                const completedKey = `${locId}-${game}`;
+                const isCompleted = gameState.completedMiniGames.includes(completedKey);
+                const gameInfo = getMiniGameInfo(game);
+                
+                content += `
+                    <div class="mini-game-card ${isCompleted ? 'completed' : ''}" 
+                         onclick="${isCompleted ? '' : `startMiniGame('${game}', '${locId}')`}">
+                        <div class="mini-game-icon">${gameInfo.icon}</div>
+                        <div class="mini-game-name">${gameInfo.name}</div>
+                        <div class="mini-game-reward">+${gameInfo.reward} Gold</div>
+                        <div class="mini-game-attr">${gameInfo.attr}</div>
+                        ${isCompleted ? '<p style="color: var(--fairy-green); font-size: 0.8rem;">Completed Today</p>' : ''}
+                    </div>
+                `;
+            });
+            
+            content += `</div>`;
+            
+            if (loc.shop) {
+                content += `
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-secondary" onclick="openShop('${locId}')">
+                            Visit the ${locId === 'bower' ? 'Fairy Market' : 'Shop'}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            if (loc.isEndLocation) {
+                content += `
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn" onclick="attemptEnding()">
+                            Perform in the Final Play!
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Add story event based on location
+            const storyEvent = getStoryEvent(locId);
+            if (storyEvent) {
+                content += `
+                    <div class="story-panel" style="margin-top: 30px;">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">Story Event</h4>
+                        ${storyEvent}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('location-content').innerHTML = content;
+            updateHeader();
+            saveGame();
+        }
+
+        function getMiniGameInfo(gameType) {
+            const games = {
+                trivia: { name: 'Trivia Challenge', icon: '&#128640;', attr: 'Wisdom', reward: 25 },
+                memory: { name: 'Quote Memory', icon: '&#128173;', attr: 'Cunning', reward: 20 },
+                dice: { name: 'Dice Duel', icon: '&#127922;', attr: 'Might', reward: 30 },
+                charm: { name: 'Charm Test', icon: '&#128149;', attr: 'Charm', reward: 25 },
+                dialogue: { name: 'Fairy Encounter', icon: '&#128122;', attr: 'Charm', reward: 35 },
+                finale: { name: 'Final Performance', icon: '&#127916;', attr: 'All', reward: 100 }
+            };
+            return games[gameType] || games.trivia;
+        }
+
+        function getStoryEvent(locId) {
+            const events = {
+                court: `
+                    <p><strong>Act 1, Scene 1:</strong> The tension in Theseus's court is palpable. Egeus begs the Duke to enforce his daughter's duty to marry Demetrius. Hermia defies her father, declaring her love for Lysander.</p>
+                    <p class="quote">"This man I say my father held you in discourse,<br>
+                    That he hath often dreamed of your surprise;<br>
+                    Therefore he frames these fearful comparisions."</p>
+                `,
+                forest: `
+                    <p><strong>Act 2, Scene 1:</strong> Deep in the forest, the fairy king and queen quarrel over a changeling boy. Oberon, angry with Titania, sends Puck to fetch the love-in-idleness flower to cast a spell of love upon her.</p>
+                    <p class="quote">"I am that spherish, currish spirit,<br>
+                    That keeps a prison in my goblinDOM."</p>
+                `,
+                bower: `
+                    <p><strong>Act 3, Scene 1:</strong> In the moonlit glade, Puck encounters a group of mechanicals preparing a play for Theseus's wedding. He transforms Bottom's head into that of an ass.</p>
+                    <p class="quote">"Lord, what fools these mortals be!"</p>
+                `,
+                workshop: `
+                    <p><strong>Act 4, Scene 2:</strong> The mechanicals search for Bottom after his transformation. They fear the worst, but Bottom has been enchanted by Titania's love.</p>
+                    <p class="quote">"Masters, I am to discourse wonders: but ask me not what; for if I tell you, I am no true Athenian."</p>
+                `,
+                amphitheater: `
+                    <p><strong>Act 5, Scene 1:</strong> Theseus at last weds Hippolyta. The mechanicals perform their hilariously disastrous play of Pyramus and Thisbe, delighting the court with their heartfelt amateur dramatics.</p>
+                    <p class="quote">"The iron tongue of midnight hath told twelve:<br>
+                    Lovers, to bed; 'tis almost fairy time."</p>
+                `
+            };
+            return events[locId] || '';
+        }
+
+        // ==================== MINI GAMES ====================
+        function startMiniGame(gameType, locId) {
+            if (gameState.gamesPlayed >= gameState.gamesPerDay) {
+                showModal('No Games Remaining', `You have used all your mini-games for Day ${gameState.day}. Return tomorrow or explore other locations.`);
+                return;
+            }
+            
+            gameState.completedMiniGames.push(`${locId}-${gameType}`);
+            gameState.gamesPlayed++;
+            
+            switch(gameType) {
+                case 'trivia':
+                    startTrivia();
+                    break;
+                case 'memory':
+                    startMemoryGame();
+                    break;
+                case 'dice':
+                    startDiceChallenge(locId);
+                    break;
+                case 'charm':
+                    startCharmTest(locId);
+                    break;
+                case 'dialogue':
+                    startDialogue(locId);
+                    break;
+            }
+        }
+
+        function startTrivia() {
+            currentQuiz = [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 5);
+            quizIndex = 0;
+            
+            const progressHtml = currentQuiz.map((_, i) => 
+                `<div class="quiz-dot ${i === 0 ? 'current' : ''}" id="quiz-dot-${i}"></div>`
+            ).join('');
+            document.getElementById('quiz-progress').innerHTML = progressHtml;
+            
+            showTriviaQuestion();
+            showScreen('quiz-screen');
+        }
+
+        function showTriviaQuestion() {
+            const q = currentQuiz[quizIndex];
+            document.getElementById('quiz-title').textContent = `Question ${quizIndex + 1} of 5`;
+            document.getElementById('quiz-question').textContent = `${q.ref}: ${q.q}`;
+            
+            const optionsHtml = q.options.map((opt, i) => 
+                `<div class="quiz-option" onclick="answerTrivia(${i})" id="quiz-opt-${i}">${opt}</div>`
+            ).join('');
+            document.getElementById('quiz-options').innerHTML = optionsHtml;
+        }
+
+        function answerTrivia(idx) {
+            const q = currentQuiz[quizIndex];
+            const isCorrect = idx === q.correct;
+            
+            document.getElementById(`quiz-opt-${idx}`).classList.add(isCorrect ? 'correct' : 'wrong');
+            if (!isCorrect) {
+                document.getElementById(`quiz-opt-${q.correct}`).classList.add('correct');
+            }
+            
+            gameState.triviaTotal++;
+            if (isCorrect) gameState.triviaCorrect++;
+            
+            document.getElementById(`quiz-dot-${quizIndex}`).classList.remove('current');
+            document.getElementById(`quiz-dot-${quizIndex}`).classList.add('completed');
+            
+            setTimeout(() => {
+                quizIndex++;
+                if (quizIndex >= currentQuiz.length) {
+                    endTrivia();
+                } else {
+                    document.getElementById(`quiz-dot-${quizIndex}`).classList.add('current');
+                    showTriviaQuestion();
+                }
+            }, 1000);
+        }
+
+        function endTrivia() {
+            const correct = gameState.triviaCorrect;
+            const total = gameState.triviaTotal;
+            const reward = Math.floor((correct / total) * 25);
+            
+            gameState.player.gold += reward;
+            gameState.totalGoldEarned += reward;
+            
+            showScreen('game-screen');
+            updateHeader();
+            showMap();
+            enterLocation(gameState.currentLocation);
+            
+            showModal('Trivia Complete!', 
+                `You answered ${correct} out of ${total} questions correctly!\n\n` +
+                `Wisdom +${gameState.player.attributes.Wisdom > 5 ? 1 : 0} bonus!\n` +
+                `Earned ${reward} gold!`);
+            saveGame();
+        }
+
+        function startMemoryGame() {
+            const cards = [];
+            const shuffledQuotes = [...MEMORY_CARDS].sort(() => Math.random() - 0.5);
+            
+            shuffledQuotes.forEach((item, i) => {
+                cards.push({ id: i * 2, pair: item.match, type: 'quote', content: item.quote });
+                cards.push({ id: i * 2 + 1, pair: item.match, type: 'char', content: item.char });
+            });
+            
+            cards.sort(() => Math.random() - 0.5);
+            
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = cards.map(card => 
+                `<div class="memory-card" data-id="${card.id}" data-pair="${card.pair}" data-type="${card.type}" onclick="flipCard(this)">
+                    ${card.type === 'quote' ? '&#128172;' : '&#128100;'}
+                </div>`
+            ).join('');
+            
+            memoryFlipped = [];
+            memoryMoves = 0;
+            memoryMatches = 0;
+            document.getElementById('memory-moves').textContent = `Moves: ${memoryMoves}`;
+            
+            showScreen('memory-screen');
+        }
+
+        function flipCard(card) {
+            if (memoryFlipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+            
+            card.classList.add('flipped');
+            card.textContent = card.dataset.type === 'quote' ? 
+                MEMORY_CARDS.find(c => c.match == card.dataset.pair).quote.substring(0, 20) + '...' :
+                MEMORY_CARDS.find(c => c.match == card.dataset.pair).char;
+            
+            memoryFlipped.push(card);
+            
+            if (memoryFlipped.length === 2) {
+                memoryMoves++;
+                document.getElementById('memory-moves').textContent = `Moves: ${memoryMoves}`;
+                
+                const [card1, card2] = memoryFlipped;
+                
+                if (card1.dataset.pair === card2.dataset.pair && card1.dataset.type !== card2.dataset.type) {
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    memoryMatches++;
+                    memoryFlipped = [];
+                    
+                    if (memoryMatches >= 4) {
+                        setTimeout(endMemoryGame, 500);
+                    }
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        card1.textContent = card1.dataset.type === 'quote' ? '&#128172;' : '&#128100;';
+                        card2.textContent = card2.dataset.type === 'quote' ? '&#128172;' : '&#128100;';
+                        memoryFlipped = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        function endMemoryGame() {
+            const baseReward = 20;
+            const bonus = Math.max(0, 10 - memoryMoves);
+            const total = baseReward + bonus;
+            
+            gameState.player.gold += total;
+            gameState.totalGoldEarned += total;
+            
+            showScreen('game-screen');
+            updateHeader();
+            showMap();
+            enterLocation(gameState.currentLocation);
+            
+            showModal('Memory Master!', 
+                `You matched all pairs in ${memoryMoves} moves!\n\n` +
+                `Cunning bonus applied!\n` +
+                `Earned ${total} gold!`);
+            saveGame();
+        }
+
+        function startDiceChallenge(locId) {
+            const challenges = CHALLENGES[locId] || CHALLENGES.forest;
+            currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+            
+            document.getElementById('challenge-title').textContent = currentChallenge.name;
+            document.getElementById('challenge-desc').textContent = currentChallenge.desc;
+            document.getElementById('challenge-cr').textContent = currentChallenge.cr;
+            document.getElementById('challenge-attr').textContent = currentChallenge.attr;
+            document.getElementById('dice').textContent = '?';
+            document.getElementById('dice-breakdown').textContent = '';
+            document.getElementById('dice-result').textContent = '';
+            document.getElementById('roll-btn').disabled = false;
+            
+            showScreen('challenge-screen');
+        }
+
+        function rollDice() {
+            document.getElementById('roll-btn').disabled = true;
+            const dice = document.getElementById('dice');
+            
+            dice.classList.add('rolling');
+            dice.textContent = '?';
+            
+            setTimeout(() => {
+                dice.classList.remove('rolling');
+                const roll = rollD6();
+                const mod = getAttributeModifier(currentChallenge.attr);
+                const total = roll + mod;
+                const cr = currentChallenge.cr;
+                const success = total >= cr;
+                
+                dice.textContent = roll;
+                document.getElementById('dice-breakdown').textContent = 
+                    `Roll: ${roll} + ${currentChallenge.attr} Modifier: ${mod >= 0 ? '+' : ''}${mod} = ${total} vs CR ${cr}`;
+                
+                if (success) {
+                    document.getElementById('dice-result').innerHTML = 
+                        `<span style="color: var(--fairy-green);">SUCCESS!</span><br>${currentChallenge.success}`;
+                    gameState.challengesWon++;
+                    
+                    const reward = 15 + mod;
+                    gameState.player.gold += reward;
+                    gameState.totalGoldEarned += reward;
+                    updateHeader();
+                } else {
+                    document.getElementById('dice-result').innerHTML = 
+                        `<span style="color: #e74c3c;">FAILURE!</span><br>${currentChallenge.fail}`;
+                    gameState.challengesLost++;
+                    gameState.player.health -= 15;
+                    updateHeader();
+                }
+                
+                saveGame();
+            }, 1000);
+        }
+
+        function startCharmTest(locId) {
+            const dialogues = DIALOGUES[locId] || DIALOGUES.forest;
+            currentDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+            currentDialogueIndex = 0;
+            
+            showDialogue();
+            showScreen('dialogue-screen');
+        }
+
+        function showDialogue() {
+            document.getElementById('dialogue-avatar').innerHTML = currentDialogue.npcIcon;
+            document.getElementById('dialogue-name').textContent = currentDialogue.npcName;
+            document.getElementById('dialogue-story').innerHTML = `
+                <p class="act-scene">${currentDialogue.story.act}</p>
+                <p>${currentDialogue.story.text}</p>
+            `;
+            document.getElementById('dialogue-text').textContent = currentDialogue.text;
+            
+            const choicesHtml = currentDialogue.choices.map((choice, i) => 
+                `<button class="dialogue-choice" onclick="makeDialogueChoice(${i})">
+                    ${choice.text}
+                    <div class="attr-hint">Test: ${choice.attr} (CR ${choice.successRate})</div>
+                </button>`
+            ).join('');
+            document.getElementById('dialogue-choices').innerHTML = choicesHtml;
+        }
+
+        function makeDialogueChoice(idx) {
+            const choice = currentDialogue.choices[idx];
+            const roll = rollD6();
+            const mod = getAttributeModifier(choice.attr);
+            const total = roll + mod;
+            const success = total >= choice.successRate;
+            
+            if (success) {
+                const reward = 25 + mod;
+                gameState.player.gold += reward;
+                gameState.totalGoldEarned += reward;
+                updateHeader();
+                
+                showModal('Charm Success!', 
+                    `You rolled ${roll} + ${choice.attr} modifier ${mod >= 0 ? '+' : ''}${mod} = ${total}\n\n` +
+                    `Your persuasion succeeds! The ${currentDialogue.npcName} is impressed!\n\n` +
+                    `Earned ${reward} gold!`);
+            } else {
+                showModal('Charm Failed', 
+                    `You rolled ${roll} + ${choice.attr} modifier ${mod >= 0 ? '+' : ''}${mod} = ${total}\n\n` +
+                    `The ${currentDialogue.npcName} is not convinced...\n\n` +
+                    `Better luck next time!`);
+            }
+            
+            saveGame();
+            returnFromMiniGame();
+        }
+
+        function startDialogue(locId) {
+            if (gameState.gamesPlayed >= gameState.gamesPerDay) {
+                showModal('No Games Remaining', `You have used all your mini-games for Day ${gameState.day}.`);
+                return;
+            }
+            
+            gameState.completedMiniGames.push(`${locId}-dialogue`);
+            gameState.gamesPlayed++;
+            
+            const dialogues = DIALOGUES[locId] || DIALOGUES.forest;
+            currentDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+            
+            showDialogue();
+            showScreen('dialogue-screen');
+        }
+
+        // ==================== SHOP ====================
+        function openShop(locId) {
+            const shopName = locId === 'bower' ? 'Fairy Market' : 'Local Shop';
+            document.getElementById('shop-title').textContent = shopName;
+            document.getElementById('shop-gold').textContent = gameState.player.gold;
+            
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = SHOP_ITEMS.map(item => {
+                const owned = gameState.player.items[item.id];
+                const canAfford = gameState.player.gold >= item.price;
+                const disabled = !canAfford || (owned && !item.consumable);
+                
+                return `
+                    <div class="shop-item ${owned && !item.consumable ? 'owned' : ''} ${disabled ? 'disabled' : ''}">
+                        <div class="shop-item-icon">${item.icon}</div>
+                        <div class="shop-item-name">${item.name}</div>
+                        <div class="shop-item-price">${item.price} Gold</div>
+                        <p style="font-size: 0.8rem; opacity: 0.8;">${item.desc}</p>
+                        <p style="font-size: 0.75rem; color: var(--fairy-green);">${item.effect}</p>
+                        ${owned && !item.consumable ? 
+                            '<p style="color: var(--fairy-green);">Owned</p>' : 
+                            item.consumable && owned ?
+                            `<p>Owned: ${gameState.player.items[item.id]}</p>` : ''}
+                        <button class="btn btn-small" 
+                                onclick="buyItem('${item.id}')" 
+                                ${disabled ? 'disabled' : ''}>
+                            ${canAfford ? 'Buy' : 'Need Gold'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            showScreen('shop-screen');
+        }
+
+        function buyItem(itemId) {
+            const item = SHOP_ITEMS.find(i => i.id === itemId);
+            
+            if (gameState.player.gold < item.price) {
+                showModal('Not Enough Gold', `You need ${item.price} gold but only have ${gameState.player.gold}.`);
+                return;
+            }
+            
+            gameState.player.gold -= item.price;
+            
+            if (item.consumable) {
+                gameState.player.items[itemId] = (gameState.player.items[itemId] || 0) + 1;
+            } else {
+                gameState.player.items[itemId] = 1;
+                
+                // Apply permanent effects
+                if (itemId === 'mask') {
+                    gameState.player.attributes.Charm++;
+                }
+            }
+            
+            updateHeader();
+            openShop(gameState.currentLocation);
+            saveGame();
+            
+            showModal('Purchase Complete!', `You bought ${item.name} for ${item.price} gold!`);
+        }
+
+        // ==================== ENDINGS ====================
+        function attemptEnding() {
+            // Check if player has script
+            if (!gameState.player.items['script']) {
+                showModal('Missing Item', 'You need a Play Script to access the Amphitheater. Visit Bottom\'s Workshop to purchase one.');
+                return;
+            }
+            
+            // Calculate ending based on progress
+            let ending = 'neutral';
+            let endingTitle = 'The Dreamer\'s Fate';
+            let endingSubtitle = 'A Midsummer Night\'s Dream';
+            let endingArt = '&#10052;';
+            let endingText = '';
+            
+            const flowers = gameState.player.items['flower'] || 0;
+            const helpedBottom = gameState.storyFlags.helpedBottom;
+            const attendedPerformance = gameState.storyFlags.attendedPerformance;
+            
+            if (flowers >= 3) {
+                ending = 'royal';
+                endingTitle = 'Royal Blessing';
+                endingSubtitle = 'Theseus & Hippolyta\'s Wedding';
+                endingArt = '&#127942;';
+                endingText = `
+                    <p><strong>Act 5, Scene 1:</strong> Your valor has earned the highest honor! Theseus himself invites you to witness his union with Hippolyta, and bestows upon you the gratitude of all Athens.</p>
+                    <p class="quote">"Lovers and madmen have a seething brain,<br>
+                    The lunatic, the lover, and the poet<br>
+                    Are of imagination all compact."</p>
+                    <p>You have become a legend of the Athenian court, and your name shall echo through the ages alongside the heroes of old.</p>
+                `;
+            } else if (helpedBottom && attendedPerformance) {
+                ending = 'theater';
+                endingTitle = 'Theater Glory';
+                endingSubtitle = 'Star of the Play';
+                endingArt = '&#127917;';
+                endingText = `
+                    <p><strong>Act 5, Scene 1:</strong> The mechanicals' play is a disaster, but the most wonderful disaster in theatrical history! Bottom's Pyramus brings tears of laughter to everyone present.</p>
+                    <p class="quote">"If we shadows have offended,<br>
+                    Think but this, and all is mended,<br>
+                    That you have but slumber'd here<br>
+                    While these visions did appear."</p>
+                    <p>You have earned the respect of the mechanicals and become a part of theatrical legend. The play may fail, but the memory will last forever!</p>
+                `;
+            } else {
+                ending = 'fairy';
+                endingTitle = 'Fairy Friend';
+                endingSubtitle = 'Dance Among the Fairies';
+                endingArt = '&#128123;';
+                endingText = `
+                    <p><strong>Act 3, Scene 2:</strong> Oberon and Puck, pleased with your adventures, grant you the gift of the fair folk. You can now walk between the mortal and fairy worlds.</p>
+                    <p class="quote">"My lady sweet, arise! The stubborn Queen of Love<br>
+                    I do but beg a little changeling boy<br>
+                    To be my henchman."</p>
+                    <p>You have found your place in the magical realm between dreams and reality, forever dancing in the moonlight with the spirits of the enchanted forest.</p>
+                `;
+            }
+            
+            // Show ending
+            document.getElementById('ending-art').innerHTML = endingArt;
+            document.getElementById('ending-title').textContent = endingTitle;
+            document.getElementById('ending-subtitle').textContent = endingSubtitle;
+            document.getElementById('ending-story').innerHTML = endingText;
+            
+            // Stats summary
+            const statsHtml = `
+                <h3>Your Adventure Summary</h3>
+                <div class="stat-row"><span>Character:</span><span>${gameState.player.name} (${gameState.player.token.name})</span></div>
+                <div class="stat-row"><span>Days Survived:</span><span>${gameState.day}</span></div>
+                <div class="stat-row"><span>Gold Earned:</span><span>${gameState.totalGoldEarned}</span></div>
+                <div class="stat-row"><span>Challenges Won:</span><span>${gameState.challengesWon}</span></div>
+                <div class="stat-row"><span>Challenges Lost:</span><span>${gameState.challengesLost}</span></div>
+                <div class="stat-row"><span>Trivia Accuracy:</span><span>${gameState.triviaTotal > 0 ? Math.round(gameState.triviaCorrect / gameState.triviaTotal * 100) : 0}%</span></div>
+                <div class="stat-row"><span>Items Collected:</span><span>${Object.keys(gameState.player.items).length}</span></div>
+            `;
+            document.getElementById('stats-summary').innerHTML = statsHtml;
+            
+            showScreen('ending-screen');
+        }
+
+        function returnFromMiniGame() {
+            showScreen('game-screen');
+            showMap();
+            enterLocation(gameState.currentLocation);
+        }
+
+        // ==================== SAVE/LOAD ====================
+        function saveGame() {
+            localStorage.setItem('midsummerGame', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('midsummerGame');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                updateHeader();
+                showMap();
+                enterLocation(gameState.currentLocation);
+                showScreen('game-screen');
+            } else {
+                showModal('No Save Found', 'No saved game found. Starting a new adventure!');
+            }
+        }
+
+        function newGame() {
+            localStorage.removeItem('midsummerGame');
+            location.reload();
+        }
+
+        // ==================== INIT ====================
+        window.onload = function() {
+            initCreation();
+        };
+    </script>
+</body>
+</html>
