@@ -1,0 +1,2874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macbeth: The Scottish Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2C1810;
+            --secondary: #4A6741;
+            --accent: #C9A227;
+            --background: #1A1A1A;
+            --text: #E8DCC4;
+            --danger: #8B0000;
+            --magic: #6B4E9E;
+            --success: #2E7D32;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes rollDice {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            25% { transform: rotateX(90deg) rotateY(45deg); }
+            50% { transform: rotateX(180deg) rotateY(90deg); }
+            75% { transform: rotateX(270deg) rotateY(135deg); }
+            100% { transform: rotateX(360deg) rotateY(180deg); }
+        }
+
+        @keyframes typeWriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes mist {
+            0%, 100% { opacity: 0.3; transform: translateX(0); }
+            50% { opacity: 0.5; transform: translateX(20px); }
+        }
+
+        @keyframes bloodPulse {
+            0%, 100% { box-shadow: 0 0 5px var(--danger); }
+            50% { box-shadow: 0 0 20px var(--danger), 0 0 30px var(--danger); }
+        }
+
+        /* Title Screen */
+        #title-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #2C1810 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #title-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .mist-overlay {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(107, 78, 158, 0.1), transparent);
+            animation: mist 15s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .game-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 4rem;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(201, 162, 39, 0.5), 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 1rem;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            z-index: 10;
+        }
+
+        .game-subtitle {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.5rem;
+            color: var(--text);
+            margin-bottom: 3rem;
+            opacity: 0.8;
+            z-index: 10;
+        }
+
+        .title-quote {
+            font-family: 'Crimson Text', serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--magic);
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 1rem 2rem;
+            border-left: 3px solid var(--magic);
+            border-right: 3px solid var(--magic);
+            z-index: 10;
+        }
+
+        .btn {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.3rem;
+            padding: 1rem 3rem;
+            border: 2px solid var(--accent);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a0f0a 100%);
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(180deg, #3d2317 0%, var(--primary) 100%);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            font-size: 1rem;
+            padding: 0.7rem 2rem;
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        .title-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        /* Character Creation */
+        #character-creation {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        .creation-container {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .creation-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .creation-section {
+            background: linear-gradient(180deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 26, 26, 0.9) 100%);
+            border: 2px solid var(--accent);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '◆';
+            font-size: 0.8rem;
+        }
+
+        /* Name Input */
+        .name-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .name-input {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.3rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--accent);
+            color: var(--text);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: var(--magic);
+            box-shadow: 0 0 15px rgba(107, 78, 158, 0.3);
+        }
+
+        /* Token Selection */
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .token-card {
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        .token-card:hover {
+            border-color: var(--text);
+            transform: scale(1.05);
+        }
+
+        .token-card.selected {
+            border-color: var(--accent);
+            background: rgba(201, 162, 39, 0.2);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.4);
+        }
+
+        .token-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 0.5rem;
+        }
+
+        .token-name {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--text);
+        }
+
+        /* Attributes */
+        .attributes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .attribute-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .attribute-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+        .attribute-info {
+            flex: 1;
+        }
+
+        .attribute-name {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .attribute-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .attribute-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .attr-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .attr-btn:hover:not(:disabled) {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .attr-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .points-display {
+            text-align: center;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-top: 1.5rem;
+        }
+
+        .points-value {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Game Screen */
+        #game-screen {
+            display: none;
+            min-height: 100vh;
+            background: var(--background);
+        }
+
+        /* HUD */
+        .game-hud {
+            background: linear-gradient(180deg, var(--primary) 0%, #1a0f0a 100%);
+            border-bottom: 3px solid var(--accent);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player-token {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .player-details h3 {
+            font-family: 'MedievalSharp', cursive;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        .player-class {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .stat-bars {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .bar-container {
+            width: 100px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .bar-fill.hp {
+            background: linear-gradient(90deg, var(--danger) 0%, #ff4444 100%);
+        }
+
+        .bar-fill.sanity {
+            background: linear-gradient(90deg, var(--magic) 0%, #9b6dff 100%);
+        }
+
+        .bar-value {
+            font-size: 0.9rem;
+            min-width: 50px;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .gold-display, .day-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .game-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .game-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Map Area */
+        .map-area {
+            background: linear-gradient(180deg, rgba(44, 24, 16, 0.6) 0%, rgba(26, 26, 26, 0.8) 100%);
+            border: 2px solid var(--secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 500px;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.3);
+        }
+
+        .map-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .current-location {
+            font-family: 'Crimson Text', serif;
+            font-style: italic;
+            color: var(--secondary);
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'%3E%3Cdefs%3E%3ClinearGradient id='land' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232d4a2d'/%3E%3Cstop offset='100%25' style='stop-color=%231a2e1a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23land)' width='800' height='500'/%3E%3Cpath d='M50,450 Q200,400 400,420 T700,380 L780,450 L780,500 L50,500 Z' fill='%234a6741' opacity='0.5'/%3E%3Cpath d='M0,200 Q150,180 300,220 T600,180 L800,200 L800,0 L0,0 Z' fill='%233d5c3d' opacity='0.3'/%3E%3Ccircle cx='100' cy='150' r='20' fill='%23ffffff' opacity='0.1'/%3E%3Ccircle cx='700' cy='100' r='30' fill='%23ffffff' opacity='0.1'/%3E%3C/svg%3E");
+            background-size: cover;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .location-marker {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .location-marker:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .location-marker.current {
+            filter: drop-shadow(0 0 10px var(--accent));
+        }
+
+        .location-marker.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .marker-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .marker-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            color: var(--text);
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        /* Sidebar */
+        .game-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sidebar-panel {
+            background: linear-gradient(180deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 26, 26, 0.9) 100%);
+            border: 2px solid var(--secondary);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .panel-header {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Location Info Panel */
+        .location-info {
+            min-height: 200px;
+        }
+
+        .location-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .location-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-style: italic;
+            color: rgba(232, 220, 196, 0.8);
+        }
+
+        .location-quote {
+            font-style: italic;
+            color: var(--magic);
+            padding: 0.5rem;
+            border-left: 2px solid var(--magic);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .mini-games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mini-game-btn {
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--secondary);
+            color: var(--text);
+            font-family: 'Crimson Text', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mini-game-btn:hover:not(:disabled) {
+            background: rgba(74, 103, 65, 0.3);
+            border-color: var(--accent);
+        }
+
+        .mini-game-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .mini-game-btn .status {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .mini-game-btn.played .status {
+            color: var(--success);
+        }
+
+        /* Attributes Panel */
+        .attributes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .attr-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attr-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .attr-icon-small {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.8rem;
+            background: linear-gradient(180deg, var(--primary) 0%, #1a0f0a 100%);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            font-family: 'MedievalSharp', cursive;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, #3d2317 0%, var(--primary) 100%);
+            transform: scale(1.02);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, var(--primary) 0%, #0a0a0a 100%);
+            border: 3px solid var(--accent);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(201, 162, 39, 0.3);
+        }
+
+        .modal-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--text);
+            background: transparent;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Shop Modal */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .shop-item {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .shop-item:hover {
+            border-color: var(--accent);
+        }
+
+        .shop-item-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 0.5rem;
+        }
+
+        .shop-item-name {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+
+        .shop-item-price {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .shop-item-effect {
+            font-size: 0.85rem;
+            color: rgba(232, 220, 196, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .buy-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            border: none;
+            color: var(--primary);
+            font-family: 'MedievalSharp', cursive;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(201, 162, 39, 0.5);
+        }
+
+        .buy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Inventory Modal */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .inventory-item {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .inventory-item-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 0.5rem;
+        }
+
+        .inventory-item-name {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .inventory-item-effect {
+            font-size: 0.8rem;
+            color: rgba(232, 220, 196, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .use-btn {
+            padding: 0.4rem 0.8rem;
+            background: var(--secondary);
+            border: none;
+            color: var(--text);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .use-btn:hover {
+            background: var(--success);
+        }
+
+        .empty-inventory {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.6;
+        }
+
+        /* Challenge Modal */
+        .challenge-content {
+            text-align: center;
+        }
+
+        .challenge-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .challenge-question {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .challenge-question p {
+            font-family: 'Crimson Text', serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--magic);
+        }
+
+        .challenge-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .challenge-option {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #444;
+            color: var(--text);
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .challenge-option:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: rgba(201, 162, 39, 0.1);
+        }
+
+        .challenge-option:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Dice Roll Display */
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .dice-wrapper {
+            text-align: center;
+        }
+
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #d4d4d4 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .dice.rolling {
+            animation: rollDice 0.5s ease-in-out;
+        }
+
+        .dice-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .modifier-display {
+            font-size: 1.3rem;
+            color: var(--accent);
+        }
+
+        .total-result {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2rem;
+            margin-top: 1rem;
+        }
+
+        .result-success {
+            color: var(--success);
+        }
+
+        .result-failure {
+            color: var(--danger);
+        }
+
+        .result-critical {
+            color: var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        /* Story Modal */
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .story-text p {
+            margin-bottom: 1rem;
+        }
+
+        .story-quote {
+            font-style: italic;
+            color: var(--magic);
+            padding: 1rem 1.5rem;
+            border-left: 3px solid var(--magic);
+            background: rgba(107, 78, 158, 0.1);
+            margin: 1rem 0;
+        }
+
+        .story-quote cite {
+            display: block;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .story-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Tutorial Modal */
+        .tutorial-content {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .tutorial-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .tutorial-section h3 {
+            font-family: 'MedievalSharp', cursive;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .tutorial-section p {
+            line-height: 1.6;
+        }
+
+        /* Game Over Screen */
+        #game-over {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            text-align: center;
+        }
+
+        .ending-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .ending-subtitle {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        .ending-text {
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+            line-height: 1.9;
+        }
+
+        .final-quote {
+            font-style: italic;
+            color: var(--magic);
+            font-size: 1.3rem;
+            padding: 1.5rem 2rem;
+            border-left: 4px solid var(--magic);
+            border-right: 4px solid var(--magic);
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        .final-stats {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem auto;
+            max-width: 400px;
+        }
+
+        .final-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ending-buttons {
+            display: flex;
+            justify-content: center;
+gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+
+            .game-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .token-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .game-hud {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stat-bars {
+                justify-content: center;
+            }
+
+            .game-stats {
+                justify-content: center;
+            }
+
+            .modal {
+                padding: 1rem;
+            }
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            border: 2px solid var(--accent);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Screen -->
+    <div id="title-screen">
+        <div class="mist-overlay"></div>
+        <h1 class="game-title">Macbeth</h1>
+        <p class="game-subtitle">The Scottish Game</p>
+        <div class="title-quote">
+            "Fair is foul, and foul is fair:<br>
+            Hover through the fog and filthy air."
+        </div>
+        <div class="title-buttons">
+            <button class="btn" onclick="showTutorial()">How to Play</button>
+            <button class="btn" onclick="startNewGame()">Begin Your Quest</button>
+            <button class="btn btn-secondary" onclick="loadGame()" id="continue-btn" style="display:none;">Continue Adventure</button>
+        </div>
+    </div>
+
+    <!-- Character Creation -->
+    <div id="character-creation">
+        <div class="creation-container">
+            <h1 class="creation-title">Create Your Character</h1>
+
+            <!-- Name Section -->
+            <div class="creation-section">
+                <h2 class="section-title">Choose Your Name</h2>
+                <div class="name-input-wrapper">
+                    <input type="text" class="name-input" id="player-name" placeholder="Enter your name..." maxlength="20">
+                    <p style="opacity: 0.6; font-size: 0.9rem;">Your name shall be remembered in Scottish history</p>
+                </div>
+            </div>
+
+            <!-- Token Selection -->
+            <div class="creation-section">
+                <h2 class="section-title">Choose Your Token</h2>
+                <div class="token-grid" id="token-grid">
+                    <!-- Tokens will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Attributes -->
+            <div class="creation-section">
+                <h2 class="section-title">Distribute Your Attributes</h2>
+                <p style="margin-bottom: 1rem; opacity: 0.7;">You have <span style="color: var(--accent);">5 points</span> to distribute among your attributes. Each attribute starts at 5.</p>
+                <div class="attributes-container" id="attributes-container">
+                    <!-- Attributes will be generated by JS -->
+                </div>
+                <div class="points-display">
+                    Points Remaining: <span class="points-value" id="points-remaining">5</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" id="start-adventure-btn" onclick="beginAdventure()" disabled>Begin Your Adventure</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen">
+        <!-- HUD -->
+        <div class="game-hud">
+            <div class="player-info">
+                <div class="player-token" id="player-token-display"></div>
+                <div class="player-details">
+                    <h3 id="hud-player-name">Player</h3>
+                    <span class="player-class">Seeker of Fate</span>
+                </div>
+            </div>
+
+            <div class="stat-bars">
+                <div class="stat-bar">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="#ff4444">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <div class="bar-container">
+                        <div class="bar-fill hp" id="hp-bar" style="width: 100%;"></div>
+                    </div>
+                    <span class="bar-value" id="hp-value">100/100</span>
+                </div>
+                <div class="stat-bar">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="#9b6dff">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <div class="bar-container">
+                        <div class="bar-fill sanity" id="sanity-bar" style="width: 100%;"></div>
+                    </div>
+                    <span class="bar-value" id="sanity-value">100/100</span>
+                </div>
+            </div>
+
+            <div class="game-stats">
+                <div class="gold-display">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#C9A227">
+                        <circle cx="12" cy="12" r="10" stroke="#8B6914" stroke-width="2"/>
+                        <text x="12" y="16" text-anchor="middle" font-size="10" fill="#8B6914">G</text>
+                    </svg>
+                    <span id="gold-display">50</span>
+                </div>
+                <div class="day-display">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#E8DCC4">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    <span>Day <span id="day-display">1</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="game-content">
+            <!-- Map Area -->
+            <div class="map-area">
+                <div class="map-header">
+                    <h2 class="map-title">Scotland</h2>
+                    <span class="current-location">Act I: "Fair is Foul"</span>
+                </div>
+                <div class="map-container" id="map-container">
+                    <!-- Location markers will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="game-sidebar">
+                <!-- Location Info -->
+                <div class="sidebar-panel location-info">
+                    <h3 class="panel-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        Current Location
+                    </h3>
+                    <div id="location-details">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Attributes -->
+                <div class="sidebar-panel">
+                    <h3 class="panel-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                        Your Attributes
+                    </h3>
+                    <div class="attributes-list" id="game-attributes">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="sidebar-panel">
+                    <h3 class="panel-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                        Actions
+                    </h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="openShop()">Visit the Merchant</button>
+                        <button class="action-btn" onclick="openInventory()">Your Inventory</button>
+                        <button class="action-btn" onclick="openCharacterInfo()">Character Info</button>
+                        <button class="action-btn" onclick="advanceDay()" id="advance-day-btn">Rest until Tomorrow</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over">
+        <h1 class="ending-title" id="ending-title">The End</h1>
+        <h2 class="ending-subtitle" id="ending-subtitle"></h2>
+        <div class="ending-text" id="ending-text"></div>
+        <div class="final-quote" id="final-quote"></div>
+        <div class="final-stats" id="final-stats"></div>
+        <div class="ending-buttons">
+            <button class="btn" onclick="startNewGame()">Play Again</button>
+            <button class="btn btn-secondary" onclick="goToTitle()">Return to Title</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-content">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GAME DATA
+        // ============================================
+
+        const TOKENS = [
+            { id: 'macbeth', name: 'Macbeth', color: '#8B0000', desc: 'Scottish Thane, bound by fate' },
+            { id: 'lady_macbeth', name: 'Lady Macbeth', color: '#4A0080', desc: 'Power behind the throne' },
+            { id: 'banquo', name: 'Banquo', color: '#1E4D2B', desc: 'Noble warrior, friend of Macbeth' },
+            { id: 'macduff', name: 'Macduff', color: '#2E4A62', desc: 'Righteous noble of Fife' },
+            { id: 'duncan', name: 'King Duncan', color: '#C9A227', desc: 'The rightful King of Scotland' },
+            { id: 'malcolm', name: 'Malcolm', color: '#4A6741', desc: 'Heir to the Scottish throne' },
+            { id: 'witch1', name: 'Weird Sister I', color: '#3D2B1F', desc: 'Hecate\'s servant' },
+            { id: 'witch2', name: 'Weird Sister II', color: '#2B1F1F', desc: 'The Veiled One' },
+            { id: 'witch3', name: 'Weird Sister III', color: '#1F2B1F', desc: 'The Croaking Voice' },
+            { id: 'lennox', name: 'Lennox', color: '#5C4033', desc: 'Scottish nobleman' },
+            { id: 'ross', name: 'Ross', color: '#4A4A2E', desc: 'Scottish lord' },
+            { id: 'fleance', name: 'Fleance', color: '#2E5A4A', desc: 'Son of Banquo' }
+        ];
+
+        const ATTRIBUTES = [
+            { id: 'power', name: 'Power', desc: 'Combat strength', icon: '⚔️' },
+            { id: 'speed', name: 'Speed', desc: 'Agility & quickness', icon: '🏃' },
+            { id: 'intelligence', name: 'Intelligence', desc: 'Wisdom & cunning', icon: '📚' },
+            { id: 'sanity', name: 'Sanity', desc: 'Mental stability', icon: '🧠' },
+            { id: 'reputation', name: 'Reputation', desc: 'Honor & standing', icon: '👑' }
+        ];
+
+        const LOCATIONS = {
+            forres: {
+                name: 'Forres - The Heath',
+                act: 1,
+                description: 'A barren, misty heath where the three Weird Sisters gather to prophesy. The air is thick with unnatural fog.',
+                quote: '"Upon the heath, where three witches stand, the fates of Scotland shall be told."',
+                quoteSource: 'Act I, Scene I',
+                position: { top: '15%', left: '10%' },
+                challenges: ['witchRiddle', 'fateReading', 'witchTrial'],
+                unlocked: true
+            },
+            battlefield: {
+                name: 'Battlefield',
+                act: 1,
+                description: 'The site of Macbeth\'s great victory against the rebels. Weapons and banners litter the ground.',
+                quote: '"What bloody man is that?" - Malcolm, Act I, Scene II',
+                quoteSource: 'Act I, Scene II',
+                position: { top: '25%', left: '30%' },
+                challenges: ['combat', 'swordPractice'],
+                unlocked: true
+            },
+            inverness: {
+                name: 'Inverness Castle',
+                act: 1,
+                description: 'The ancestral home of Macbeth, where Lady Macbeth awaits. Candles flicker in the windows.',
+                quote: '"To be king stands not within the prospect of belief" - Macbeth, Act I',
+                quoteSource: 'Act I, Scene III',
+                position: { top: '40%', left: '20%' },
+                challenges: ['memory', 'servantsQuiz'],
+                unlocked: true
+            },
+            cawdor: {
+                name: 'Cawdor Castle',
+                act: 2,
+                description: 'Where King Duncan holds court. The great hall echoes with merriment and political intrigue.',
+                quote: '"The king expects me now at Cawdor" - Macbeth, Act I, Scene III',
+                quoteSource: 'Act I, Scene III',
+                position: { top: '20%', left: '55%' },
+                challenges: ['honorTrial', 'loyaltyTest'],
+                unlocked: true
+            },
+            glamis: {
+                name: 'Glamis Castle',
+                act: 3,
+                description: 'Ancient ruins shrouded in mystery. Ghostly whispers speak of the castle\'s dark history.',
+                quote: '"Of all men\'s lives, by thee I have been rashly judged" - Macbeth, Act III',
+                quoteSource: 'Act III, Scene I',
+                position: { top: '50%', left: '40%' },
+                challenges: ['ghostWhispers', 'ancientRiddle'],
+                unlocked: false
+            },
+            dunsinane: {
+                name: 'Dunsinane Palace',
+                act: 3,
+                description: 'Macbeth\'s seat of power. The throne room is cold, and strange visions haunt the corridors.',
+                quote: '"I have supped full with horrors; direness, familiar to my slaughterous thoughts, cannot once start me." - Macbeth, Act V',
+                quoteSource: 'Act V, Scene V',
+                position: { top: '35%', left: '70%' },
+                challenges: ['politicalIntrigue', 'ghostBanquo'],
+                unlocked: false
+            },
+            fife: {
+                name: 'Fife - Macduff\'s Estate',
+                act: 4,
+                description: 'The humble home of noble Macduff. Its peaceful fields contrast with Scotland\'s turmoil.',
+                quote: '"All my pretty ones? Did you say all?" - Macduff, Act IV, Scene II',
+                quoteSource: 'Act IV, Scene II',
+                position: { top: '60%', left: '25%' },
+                challenges: ['investigation', 'evidenceHunt'],
+                unlocked: false
+            },
+            birnham: {
+                name: 'Birnham Wood',
+                act: 5,
+                description: 'The prophesied forest moves toward Dunsinane. Armies gather under its boughs.',
+                quote: '"When I beheld the queen, my lord, my lord..." - Lennox, Act V',
+                quoteSource: 'Act V, Scene VII',
+                position: { top: '75%', left: '50%' },
+                challenges: ['stealth', 'woodLore'],
+                unlocked: false
+            }
+        };
+
+        const MINI_GAMES = {
+            witchRiddle: {
+                name: 'The Witch\'s Riddle',
+                type: 'riddle',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'sanity',
+                cr: 4,
+                description: 'The Weird Sisters offer you a riddle from the depths of fate.',
+                questions: [
+                    {
+                        question: 'Complete the prophecy: "All hail, Macbeth! That shalt be king hereafter!" What answer completes the witches\' chant?',
+                        options: ['Hail to thee, Thane of Cawdor!', 'Great Glamis! Worthy Cawdor!', 'Hail, King of Scotland!', 'Sleep no more, Macbeth!'],
+                        correct: 1,
+                        quote: '"All hail, Macbeth! that shalt be king hereafter!"',
+                        source: 'Act I, Scene III'
+                    },
+                    {
+                        question: '"Is this a dagger which I see before me?" What does this vision represent for Macbeth?',
+                        options: ['A gift from the witches', 'The murder weapon he will use', 'His ambition taking form', 'A sign from God'],
+                        correct: 2,
+                        quote: '"Is this a dagger which I see before me, the handle toward my hand?"',
+                        source: 'Act II, Scene I'
+                    },
+                    {
+                        question: 'The witches dance with Hecate. What do they chant as they vanish?',
+                        options: ['Fair is foul, and foul is fair!', 'Through the fog and filthy air!', 'Hover through the fog and filthy air!', 'Double, double, toil and trouble!'],
+                        correct: 2,
+                        quote: '"Hover through the fog and filthy air."',
+                        source: 'Act I, Scene I'
+                    }
+                ]
+            },
+            fateReading: {
+                name: 'Reading the Fates',
+                type: 'choice',
+                primaryAttr: 'sanity',
+                secondaryAttr: 'intelligence',
+                cr: 5,
+                description: 'The witches offer to reveal fragments of your destiny.',
+                questions: [
+                    {
+                        question: 'The first apparition appears: "Beware Macduff!" What is it?',
+                        options: ['A bloody child', 'A crowned child with a tree', 'A armed head', 'Eight kings followed by Banquo'],
+                        correct: 2,
+                        quote: '"Be bloody, bold, and resolute; laugh to scorn the power of man, for none of woman born shall harm Macbeth."',
+                        source: 'Act IV, Scene I'
+                    },
+                    {
+                        question: 'What is Banquo\'s fate according to the witches\' prophecy?',
+                        options: ['He will become king', 'His descendants will rule', 'He will die in battle', 'He will live forever'],
+                        correct: 1,
+                        quote: '"Thou shalt get kings, though thou be none."',
+                        source: 'Act I, Scene III'
+                    }
+                ]
+            },
+            combat: {
+                name: 'Combat Trial',
+                type: 'combat',
+                primaryAttr: 'power',
+                secondaryAttr: 'speed',
+                cr: 5,
+                description: 'Face a rebel soldier in combat to prove your worth.',
+                questions: [
+                    {
+                        question: 'The rebel swings! Quick, which stance do you take?',
+                        options: ['Aggressive forward strike', 'Defensive parry', 'Dodge to the left', 'Counter attack'],
+                        correct: 1,
+                        quote: '"I have no spur to prick the sides of my intent, but only vaulting ambition."',
+                        source: 'Act I, Scene VII'
+                    }
+                ]
+            },
+            swordPractice: {
+                name: 'Sword Practice',
+                type: 'combat',
+                primaryAttr: 'power',
+                secondaryAttr: 'speed',
+                cr: 3,
+                description: 'Practice your swordsmanship with a training dummy.',
+                questions: [
+                    {
+                        question: 'Execute the technique: "The Crown Strike"!',
+                        options: ['Thrust high', 'Slash horizontally', 'Overhead chop', 'Quick jab'],
+                        correct: 2,
+                        quote: '"He wants the crown; therefore he must die."',
+                        source: 'Internal Thought'
+                    }
+                ]
+            },
+            memory: {
+                name: 'Memory of the Night',
+                type: 'trivia',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'sanity',
+                cr: 4,
+                description: 'Recall the events of that fateful night.',
+                questions: [
+                    {
+                        question: 'What did Lady Macbeth demand to wash from her hands?',
+                        options: ['Blood', 'Tears', 'Wine', 'Soot'],
+                        correct: 0,
+                        quote: '"Out, damned spot! out, I say!"',
+                        source: 'Act V, Scene I'
+                    },
+                    {
+                        question: 'Who knocked at the gate the morning after the murder?',
+                        options: ['Lennox', 'Macduff', 'Ross', 'The Porter himself'],
+                        correct: 1,
+                        quote: '"I pray you, speak not; he grows worse and worse."',
+                        source: 'Act II, Scene III'
+                    }
+                ]
+            },
+            servantsQuiz: {
+                name: 'The Servants\' Gossip',
+                type: 'trivia',
+                primaryAttr: 'reputation',
+                secondaryAttr: 'intelligence',
+                cr: 3,
+                description: 'Listen to the servants\' whispers and answer their riddles.',
+                questions: [
+                    {
+                        question: 'What did the thane of Cawdor do, according to the servants?',
+                        options: ['Betrayed the King', 'Won a great battle', 'Died honorably', 'Fled to England'],
+                        correct: 0,
+                        quote: '"The Western Isle" - Ross, Act I, Scene II'
+                    },
+                    {
+                        question: 'Who is "Bellona\'s bridegroom"?',
+                        options: ['Macduff', 'Macbeth', 'Banquo', 'Malcolm'],
+                        correct: 1,
+                        quote: '"Which should accompany old age, as honour, love, obedience, troops of friends, I must not look to have."',
+                        source: 'Act V, Scene VIII'
+                    }
+                ]
+            },
+            honorTrial: {
+                name: 'Trial of Honor',
+                type: 'choice',
+                primaryAttr: 'reputation',
+                secondaryAttr: 'sanity',
+                cr: 6,
+                description: 'Prove your loyalty before the King.',
+                questions: [
+                    {
+                        question: 'The King asks: "What is the price of loyalty?"',
+                        options: ['Gold and titles', 'One\'s very soul', 'Blind obedience', 'Eternal service'],
+                        correct: 2,
+                        quote: '"Let your highness command upon me."',
+                        source: 'Act I, Scene IV'
+                    }
+                ]
+            },
+            loyaltyTest: {
+                name: 'Test of Loyalty',
+                type: 'choice',
+                primaryAttr: 'reputation',
+                secondaryAttr: 'intelligence',
+                cr: 5,
+                description: 'Demonstrate your devotion to Scotland.',
+                questions: [
+                    {
+                        question: 'What does true loyalty to one\'s king require?',
+                        options: ['Never questioning', 'Sacrificing everything', 'Blind faith', 'All of the above'],
+                        correct: 3,
+                        quote: '"I am afraid to think what I have done."',
+                        source: 'Act II, Scene II'
+                    }
+                ]
+            },
+            ghostWhispers: {
+                name: 'Ghost Whispers',
+                type: 'riddle',
+                primaryAttr: 'sanity',
+                secondaryAttr: 'intelligence',
+                cr: 6,
+                description: 'Spirits speak from the walls. Can you understand them?',
+                questions: [
+                    {
+                        question: 'The ghost whispers: "Who can unbind what is bound?"',
+                        options: ['Time', 'Death', 'Guilt', 'Nothing'],
+                        correct: 2,
+                        quote: '"I have supped full with horrors."',
+                        source: 'Act V, Scene V'
+                    }
+                ]
+            },
+            ancientRiddle: {
+                name: 'Ancient Riddle',
+                type: 'riddle',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'sanity',
+                cr: 7,
+                description: 'Solve the ancient riddle carved in stone.',
+                questions: [
+                    {
+                        question: '"Tomorrow, and tomorrow, and tomorrow" - what follows this famous line?',
+                        options: ['Creeps in this petty pace from day to day', 'The end approaches swiftly', 'Death awaits us all', 'Scotland falls to ruin'],
+                        correct: 0,
+                        quote: '"Tomorrow, and tomorrow, and tomorrow, creeps in this petty pace from day to day."',
+                        source: 'Act V, Scene V'
+                    }
+                ]
+            },
+            politicalIntrigue: {
+                name: 'Court Intrigue',
+                type: 'choice',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'reputation',
+                cr: 6,
+                description: 'Navigate the dangerous politics of the court.',
+                questions: [
+                    {
+                        question: 'A lord whispers secrets. How do you respond?',
+                        options: ['Report to the King immediately', 'Use the information wisely', 'Ignore the gossip', 'Spread it further'],
+                        correct: 1,
+                        quote: '"So well thy words become thee as thy wounds."',
+                        source: 'Act I, Scene II'
+                    }
+                ]
+            },
+            ghostBanquo: {
+                name: 'Banquo\'s Ghost',
+                type: 'sanity',
+                primaryAttr: 'sanity',
+                secondaryAttr: 'reputation',
+                cr: 7,
+                description: 'Banquo\'s ghost haunts the banquet hall. Maintain your composure!',
+                questions: [
+                    {
+                        question: 'The ghost points accusingly. What steadies you?',
+                        options: ['Courage', 'Denial', 'Memory of friendship', 'Sheer will'],
+                        correct: 2,
+                        quote: '"Thou canst not say I did it: never shake thy gory locks at me."',
+                        source: 'Act III, Scene IV'
+                    }
+                ]
+            },
+            investigation: {
+                name: 'Investigation',
+                type: 'trivia',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'speed',
+                cr: 5,
+                description: 'Investigate the tragedy that befell Macduff\'s family.',
+                questions: [
+                    {
+                        question: 'Who ordered the murder of Macduff\'s wife and children?',
+                        options: ['Banquo', 'Macbeth', 'Lady Macbeth', 'The Witches'],
+                        correct: 1,
+                        quote: '"The Tyrant\'s soldier, I am he."',
+                        source: 'Act IV, Scene III'
+                    }
+                ]
+            },
+            evidenceHunt: {
+                name: 'Hunt for Evidence',
+                type: 'trivia',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'speed',
+                cr: 4,
+                description: 'Search for clues about Macbeth\'s crimes.',
+                questions: [
+                    {
+                        question: 'What weapon was used in the murder of King Duncan?',
+                        options: ['A sword', 'A dagger', 'Poison', 'Strangulation'],
+                        correct: 1,
+                        quote: '"Is this a dagger which I see before me?"',
+                        source: 'Act II, Scene I'
+                    }
+                ]
+            },
+            stealth: {
+                name: 'Stealth Mission',
+                type: 'stealth',
+                primaryAttr: 'speed',
+                secondaryAttr: 'intelligence',
+                cr: 6,
+                description: 'Move through enemy territory unseen.',
+                questions: [
+                    {
+                        question: 'A guard approaches. How do you proceed?',
+                        options: ['Hide in shadows', 'Distract him', 'Run past', 'Fight if necessary'],
+                        correct: 0,
+                        quote: '"I have no words; my voice is in my blood."',
+                        source: 'Act IV, Scene III'
+                    }
+                ]
+            },
+            woodLore: {
+                name: 'Woodland Lore',
+                type: 'trivia',
+                primaryAttr: 'intelligence',
+                secondaryAttr: 'speed',
+                cr: 5,
+                description: 'Learn the secrets of the Birnham Wood prophecy.',
+                questions: [
+                    {
+                        question: 'According to the witches, when will Macbeth be defeated?',
+                        options: ['When the sun sets', 'When Birnham Wood moves to Dunsinane', 'When ten men stand against him', 'Never'],
+                        correct: 1,
+                        quote: '"Macbeth shall never vanquished be, until Great Birnham Wood to high Dunsinane Hill shall come against him."',
+                        source: 'Act IV, Scene I'
+                    }
+                ]
+            },
+            witchTrial: {
+                name: 'Trial by Witch',
+                type: 'special',
+                primaryAttr: 'sanity',
+                secondaryAttr: 'intelligence',
+                cr: 8,
+                description: 'Endure the Weird Sisters\' most challenging trial.',
+                questions: [
+                    {
+                        question: '"When the battle\'s lost and won" - what does this mean?',
+                        options: ['Every battle has two sides', 'Loss is also victory', 'The witches know all', 'Only one survives'],
+                        correct: 1,
+                        quote: '"When the battle\'s lost and won."',
+                        source: 'Act I, Scene I'
+                    }
+                ]
+            }
+        };
+
+        const SHOP_ITEMS = [
+            { id: 'health_potion', name: 'Health Potion', price: 10, effect: 'Restores 20 HP', icon: '❤️', consumable: true },
+            { id: 'sanity_elixir', name: 'Sanity Elixir', price: 15, effect: 'Restores 15 Sanity', icon: '💜', consumable: true },
+            { id: 'lucky_charm', name: 'Lucky Charm', price: 25, effect: '+1 to next roll', icon: '🍀', consumable: true },
+            { id: 'steel_dagger', name: 'Steel Dagger', price: 30, effect: '+2 Power', icon: '🗡️', consumable: false, modifier: { power: 2 } },
+            { id: 'noble_mask', name: 'Noble\'s Mask', price: 40, effect: '+2 Reputation', icon: '🎭', consumable: false, modifier: { reputation: 2 } },
+            { id: 'wisdom_scroll', name: 'Wisdom Scroll', price: 35, effect: '+2 Intelligence', icon: '📜', consumable: false, modifier: { intelligence: 2 } },
+            { id: 'swift_boots', name: 'Swift Boots', price: 35, effect: '+2 Speed', icon: '👢', consumable: false, modifier: { speed: 2 } },
+            { id: 'iron_will', name: 'Iron Will Amulet', price: 45, effect: '+3 Sanity', icon: '🛡️', consumable: false, modifier: { sanity: 3 } }
+        ];
+
+        const ENDINGS = {
+            good: {
+                title: 'The True King Restored',
+                subtitle: 'Scotland is free!',
+                text: 'Through your courage and wisdom, you have helped restore Malcolm to the throne. Scotland will remember your deeds. The prophecy of the Weird Sisters has been defied, and the line of kings continues through the rightful heir.',
+                quote: '"Hail, King of Scotland!" — Act V, Scene VIII'
+            },
+            neutral: {
+                title: 'The Tyrant Falls',
+                subtitle: 'A bitter victory...',
+                text: 'Macbeth has been defeated, but at great cost. Lady Macbeth succumbed to madness, and Scotland lies scarred by war. You have fulfilled your destiny, but the price of fate was high.',
+                quote: '"Life\'s but a walking shadow, a poor player." — Act V, Scene V'
+            },
+            dark: {
+                title: 'The Crown of Thorns',
+                subtitle: 'Victory... at what cost?',
+                text: 'You have taken the throne, but the crown is heavy. The witches\' prophecies have been fulfilled in unexpected ways. As the new ruler of Scotland, you must now face the consequences of altering fate.',
+                quote: '"I have no spur to prick the sides of my intent, but only vaulting ambition." — Act I, Scene VII'
+            },
+            secret: {
+                title: 'The Scholar\'s Victory',
+                subtitle: 'Knowledge conquers all!',
+                text: 'Through deep understanding of the play and clever choices, you have found an alternate path. You neither won nor lost — instead, you learned the true lesson of Macbeth\'s tragedy.',
+                quote: '"There is no art to find the mind\'s construction in the face." — Act I, Scene IV'
+            }
+        };
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+
+        let gameState = {
+            player: {
+                name: '',
+                token: '',
+                attributes: {
+                    power: 5,
+                    speed: 5,
+                    intelligence: 5,
+                    sanity: 100,
+                    reputation: 5
+                },
+                hp: 100,
+                maxHp: 100,
+                sanity: 100,
+                maxSanity: 100,
+                gold: 50,
+                inventory: [],
+                achievements: []
+            },
+            day: 1,
+            maxDays: 5,
+            currentLocation: 'forres',
+            challengesCompleted: {},
+            gamesPlayedToday: 0,
+            maxGamesPerDay: 5,
+            storyFlags: {
+                metWitches: false,
+                killedDuncan: false,
+                killedBanquo: false,
+                joinedRebellion: false,
+                collectedKnowledge: 0
+            },
+            gameComplete: false,
+            modifierEquipment: {}
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function $(selector) {
+            return document.querySelector(selector);
+        }
+
+        function $$(selector) {
+            return document.querySelectorAll(selector);
+        }
+
+        function rollDice(numDice = 1) {
+            const results = [];
+            for (let i = 0; i < numDice; i++) {
+                results.push(Math.floor(Math.random() * 6) + 1);
+            }
+            return results;
+        }
+
+        function getModifier(attributeId) {
+            const base = gameState.player.attributes[attributeId] || 5;
+            const equipment = Object.values(gameState.modifierEquipment).reduce((sum, mod) => sum + (mod[attributeId] || 0), 0);
+            return base + equipment - 5; // Return modifier (base value - 5)
+        }
+
+        function showModal(content) {
+            $('#modal-content').innerHTML = content;
+            $('#modal-overlay').classList.add('active');
+        }
+
+        function closeModal() {
+            $('#modal-overlay').classList.remove('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function saveGame() {
+            localStorage.setItem('macbethGame', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('macbethGame');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                $('#title-screen').style.display = 'none';
+                $('#character-creation').style.display = 'none';
+                $('#game-screen').style.display = 'block';
+                updateHUD();
+                updateMap();
+                updateLocationInfo();
+                updateAttributesPanel();
+                checkGameProgress();
+            }
+        }
+
+        // ============================================
+        // TITLE SCREEN
+        // ============================================
+
+        function showTutorial() {
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">How to Play</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="tutorial-content">
+                    <div class="tutorial-section">
+                        <h3>🎭 The Story</h3>
+                        <p>You are a character in Shakespeare's Scotland. Explore the land, interact with the famous characters, and attempt to alter their tragic fate.</p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h3>🎲 Challenge System</h3>
+                        <p>When you attempt challenges, roll 1D6 and add your attribute modifier. If the result meets or exceeds the Challenge Rating (CR), you succeed!</p>
+                        <p style="margin-top: 0.5rem;"><strong>Roll + Modifier ≥ CR = Success!</strong></p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h3>🗺️ The Map</h3>
+                        <p>Visit different locations across Scotland. Each location offers unique mini-games and story events. Some locations unlock as you progress.</p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h3>📊 Attributes</h3>
+                        <p><strong>Power:</strong> Combat challenges<br>
+                        <strong>Speed:</strong> Agility and stealth<br>
+                        <strong>Intelligence:</strong> Riddles and knowledge<br>
+                        <strong>Sanity:</strong> Mental challenges (key theme!)<br>
+                        <strong>Reputation:</strong> Social and political</p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h3>🎯 Your Goal</h3>
+                        <p>Survive 5 days (Acts) and make choices that will affect the ending. Will you help Macbeth, oppose him, or find your own path?</p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h3>💰 Gold & Items</h3>
+                        <p>Earn gold by completing challenges. Buy items from the merchant to help you survive.</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="btn" onclick="closeModal()">I Understand!</button>
+                </div>
+            `;
+            showModal(content);
+        }
+
+        function startNewGame() {
+            gameState = {
+                player: {
+                    name: '',
+                    token: '',
+                    attributes: {
+                        power: 5,
+                        speed: 5,
+                        intelligence: 5,
+                        sanity: 100,
+                        reputation: 5
+                    },
+                    hp: 100,
+                    maxHp: 100,
+                    sanity: 100,
+                    maxSanity: 100,
+                    gold: 50,
+                    inventory: [],
+                    achievements: []
+                },
+                day: 1,
+                maxDays: 5,
+                currentLocation: 'forres',
+                challengesCompleted: {},
+                gamesPlayedToday: 0,
+                maxGamesPerDay: 5,
+                storyFlags: {
+                    metWitches: false,
+                    killedDuncan: false,
+                    killedBanquo: false,
+                    joinedRebellion: false,
+                    collectedKnowledge: 0
+                },
+                gameComplete: false,
+                modifierEquipment: {}
+            };
+            localStorage.removeItem('macbethGame');
+            $('#title-screen').style.display = 'none';
+            $('#game-over').style.display = 'none';
+            $('#character-creation').style.display = 'block';
+            initializeCharacterCreation();
+        }
+
+        // ============================================
+        // CHARACTER CREATION
+        // ============================================
+
+        function initializeCharacterCreation() {
+            // Setup token grid
+            const tokenGrid = $('#token-grid');
+            tokenGrid.innerHTML = TOKENS.map(token => `
+                <div class="token-card" data-token="${token.id}" onclick="selectToken('${token.id}')">
+                    <svg class="token-icon" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="${token.color}" stroke="#C9A227" stroke-width="3"/>
+                        <circle cx="50" cy="35" r="18" fill="#E8DCC4"/>
+                        <path d="M25 85 Q50 55 75 85" fill="#E8DCC4"/>
+                        ${token.id.includes('witch') ? '<path d="M30 30 Q50 10 70 30" fill="' + token.color + '" stroke="#C9A227"/>' : ''}
+                        ${token.id === 'macbeth' ? '<path d="M25 25 L40 35 L25 35 Z" fill="#C9A227"/>' : ''}
+                        ${token.id === 'duncan' ? '<circle cx="50" cy="20" r="8" fill="#C9A227"/>' : ''}
+                        ${token.id === 'lady_macbeth' ? '<circle cx="40" cy="32" r="3" fill="#333"/>' : ''}
+                    </svg>
+                    <span class="token-name">${token.name}</span>
+                </div>
+            `).join('');
+
+            // Setup attributes
+            const attrContainer = $('#attributes-container');
+            attrContainer.innerHTML = ATTRIBUTES.map(attr => `
+                <div class="attribute-row" data-attr="${attr.id}">
+                    <div class="attribute-icon">${attr.icon}</div>
+                    <div class="attribute-info">
+                        <div class="attribute-name">${attr.name}</div>
+                        <div class="attribute-value">Base: <span class="base-value">5</span></div>
+                    </div>
+                    <div class="attribute-controls">
+                        <button class="attr-btn" onclick="adjustAttribute('${attr.id}', -1)">-</button>
+                        <button class="attr-btn" onclick="adjustAttribute('${attr.id}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Event listeners
+            $('#player-name').addEventListener('input', validateCharacterCreation);
+        }
+
+        function selectToken(tokenId) {
+            gameState.player.token = tokenId;
+            $$('.token-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.token === tokenId);
+            });
+            validateCharacterCreation();
+        }
+
+        function adjustAttribute(attrId, change) {
+            const pointsRemaining = parseInt($('#points-remaining').textContent);
+            const baseValue = parseInt($(`.attribute-row[data-attr="${attrId}"] .base-value`).textContent);
+
+            if (change > 0 && pointsRemaining > 0) {
+                gameState.player.attributes[attrId] = baseValue + 1;
+                $(`.attribute-row[data-attr="${attrId}"] .base-value`).textContent = baseValue + 1;
+                $('#points-remaining').textContent = pointsRemaining - 1;
+            } else if (change < 0 && baseValue > 5) {
+                gameState.player.attributes[attrId] = baseValue - 1;
+                $(`.attribute-row[data-attr="${attrId}"] .base-value`).textContent = baseValue - 1;
+                $('#points-remaining').textContent = pointsRemaining + 1;
+            }
+
+            validateCharacterCreation();
+        }
+
+        function validateCharacterCreation() {
+            const name = $('#player-name').value.trim();
+            const hasName = name.length >= 2;
+            const hasToken = gameState.player.token !== '';
+            const hasPoints = parseInt($('#points-remaining').textContent) >= 0;
+
+            $('#start-adventure-btn').disabled = !(hasName && hasToken && hasPoints);
+        }
+
+        function beginAdventure() {
+            gameState.player.name = $('#player-name').value.trim();
+            gameState.player.hp = 100;
+            gameState.player.sanity = 100;
+
+            saveGame();
+            $('#character-creation').style.display = 'none';
+            $('#game-screen').style.display = 'block';
+
+            updateHUD();
+            updateMap();
+            updateLocationInfo();
+            updateAttributesPanel();
+
+            // Show intro story
+            setTimeout(() => showIntroStory(), 500);
+        }
+
+        function showIntroStory() {
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">Act I: "Fair is Foul"</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="story-text">
+                    <p>The year is 1040. Scotland is at war with itself.</p>
+                    <p>You awaken on a fog-shrouded heath, the sounds of battle still echoing in your memory. The great Macbeth has won a glorious victory, but whispers of prophecy linger in the mist.</p>
+                    <div class="story-quote">
+                        "When the battle's lost and won..."
+                        <cite>— The Weird Sisters, Act I, Scene I</cite>
+                    </div>
+                    <p>Three figures emerge from the fog. Their eyes hold ancient knowledge, and their words speak of fate and doom.</p>
+                    <p>You stand at the crossroads of history. What you do in the days to come may change the course of Scotland itself.</p>
+                    <div class="story-quote">
+                        "Fair is foul, and foul is fair:<br>Hover through the fog and filthy air."
+                        <cite>— The Weird Sisters, Act I, Scene I</cite>
+                    </div>
+                </div>
+                <div class="story-choices">
+                    <button class="btn" onclick="closeModal(); showToast('Your journey begins!')">Step Forward Into the Fog</button>
+                </div>
+            `;
+            showModal(content);
+        }
+
+        // ============================================
+        // MAIN GAME SCREEN
+        // ============================================
+
+        function updateHUD() {
+            $('#hud-player-name').textContent = gameState.player.name;
+            $('#gold-display').textContent = gameState.player.gold;
+            $('#day-display').textContent = gameState.day;
+
+            // HP Bar
+            const hpPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
+            $('#hp-bar').style.width = `${hpPercent}%`;
+            $('#hp-value').textContent = `${gameState.player.hp}/${gameState.player.maxHp}`;
+
+            // Sanity Bar
+            const sanityPercent = (gameState.player.sanity / gameState.player.maxSanity) * 100;
+            $('#sanity-bar').style.width = `${sanityPercent}%`;
+            $('#sanity-value').textContent = `${gameState.player.sanity}/${gameState.player.maxSanity}`;
+
+            // Player token display
+            const token = TOKENS.find(t => t.id === gameState.player.token);
+            if (token) {
+                $('#player-token-display').innerHTML = `
+                    <svg viewBox="0 0 100 100" style="width:100%;height:100%">
+                        <circle cx="50" cy="50" r="45" fill="${token.color}" stroke="#C9A227" stroke-width="3"/>
+                        <circle cx="50" cy="35" r="18" fill="#E8DCC4"/>
+                        <path d="M25 85 Q50 55 75 85" fill="#E8DCC4"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function updateMap() {
+            const mapContainer = $('#map-container');
+            mapContainer.innerHTML = Object.entries(LOCATIONS).map(([locId, loc]) => {
+                const isUnlocked = loc.unlocked || gameState.storyFlags[`unlocked_${locId}`];
+                const isCurrent = locId === gameState.currentLocation;
+                return `
+                    <div class="location-marker ${isCurrent ? 'current' : ''} ${!isUnlocked ? 'locked' : ''}"
+                         style="top: ${loc.position.top}; left: ${loc.position.left};"
+                         onclick="${isUnlocked ? `travelTo('${locId}')` : ''}"
+                         title="${loc.name}">
+                        <svg class="marker-icon" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" fill="${isUnlocked ? '#4A6741' : '#333'}" stroke="${isCurrent ? '#C9A227' : '#666'}" stroke-width="2"/>
+                            <path d="M25 10 L25 40 M15 25 L35 25" stroke="${isUnlocked ? '#E8DCC4' : '#666'}" stroke-width="3"/>
+                            ${locId === 'forres' ? '<circle cx="25" cy="25" r="8" fill="#6B4E9E"/>' : ''}
+                            ${locId === 'dunsinane' ? '<path d="M20 15 L25 10 L30 15 L30 25 L20 25 Z" fill="#C9A227"/>' : ''}
+                        </svg>
+                        <span class="marker-label">${loc.name.split(' - ')[0]}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateLocationInfo() {
+            const loc = LOCATIONS[gameState.currentLocation];
+            const gamesAvailable = loc.challenges.filter(gId => {
+                const key = `${gameState.currentLocation}_${gId}_day${gameState.day}`;
+                return !gameState.challengesCompleted[key];
+            });
+
+            const gamesList = gamesAvailable.length > 0
+                ? loc.challenges.map(gId => {
+                    const game = MINI_GAMES[gId];
+                    const key = `${gameState.currentLocation}_${gId}_day${gameState.day}`;
+                    const played = gameState.challengesCompleted[key];
+                    return `
+                        <button class="mini-game-btn ${played ? 'played' : ''}"
+                                onclick="startMiniGame('${gId}')"
+                                ${played || gameState.gamesPlayedToday >= gameState.maxGamesPerDay ? 'disabled' : ''}>
+                            <span>${game.name}</span>
+                            <span class="status">${played ? '✓ Played' : `CR: ${game.cr}`}</span>
+                        </button>
+                    `;
+                }).join('')
+                : '<p style="opacity:0.6;text-align:center;">No challenges available today</p>';
+
+            $('#location-details').innerHTML = `
+                <h3 class="location-name">${loc.name}</h3>
+                <p class="location-description">${loc.description}</p>
+                <div class="location-quote">
+                    ${loc.quote}
+                    <cite>— ${loc.quoteSource}</cite>
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem; color: var(--accent);">Available Challenges</h4>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 0.5rem;">Games today: ${gameState.gamesPlayedToday}/${gameState.maxGamesPerDay}</p>
+                <div class="mini-games-list">
+                    ${gamesList}
+                </div>
+            `;
+        }
+
+        function updateAttributesPanel() {
+            const attrList = $('#game-attributes');
+            attrList.innerHTML = ATTRIBUTES.map(attr => {
+                const value = gameState.player.attributes[attr.id];
+                const modifier = getModifier(attr.id);
+                const equipmentBonus = Object.values(gameState.modifierEquipment).reduce((sum, mod) => sum + (mod[attr.id] || 0), 0);
+                const total = value + equipmentBonus;
+                return `
+                    <div class="attr-display">
+                        <span class="attr-name">
+                            <span class="attr-icon-small">${attr.icon}</span>
+                            ${attr.name}
+                        </span>
+                        <span>
+                            ${total} ${equipmentBonus > 0 ? `<span style="color:var(--success);">(+${equipmentBonus})</span>` : ''}
+                            <span style="opacity:0.5;">(${modifier >= 0 ? '+' : ''}${modifier})</span>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function travelTo(locationId) {
+            if (locationId === gameState.currentLocation) return;
+
+            const loc = LOCATIONS[locationId];
+            if (!loc.unlocked && !gameState.storyFlags[`unlocked_${locationId}`]) {
+                showToast('This location is not yet accessible!', 'error');
+                return;
+            }
+
+            gameState.currentLocation = locationId;
+            saveGame();
+            updateMap();
+            updateLocationInfo();
+
+            // Show location entry
+            showToast(`Traveled to ${loc.name}`);
+        }
+
+        // ============================================
+        // MINI GAMES
+        // ============================================
+
+        function startMiniGame(gameId) {
+            const game = MINI_GAMES[gameId];
+            const key = `${gameState.currentLocation}_${gameId}_day${gameState.day}`;
+
+            if (gameState.challengesCompleted[key]) {
+                showToast('You have already completed this challenge today!', 'error');
+                return;
+            }
+
+            if (gameState.gamesPlayedToday >= gameState.maxGamesPerDay) {
+                showToast('You have used all your challenges for today!', 'error');
+                return;
+            }
+
+            // Start the challenge
+            showChallengeModal(gameId);
+        }
+
+        function showChallengeModal(gameId) {
+            const game = MINI_GAMES[gameId];
+            const question = game.questions[Math.floor(Math.random() * game.questions.length)];
+
+            const optionsHtml = question.options.map((opt, i) => `
+                <button class="challenge-option" onclick="answerChallenge('${gameId}', ${i}, ${question.correct})">
+                    ${opt}
+                </button>
+            `).join('');
+
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">${game.name}</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="challenge-content">
+                    <p class="challenge-description">${game.description}</p>
+                    <div class="challenge-question">
+                        <p>${question.question}</p>
+                    </div>
+                    <div class="challenge-options" id="challenge-options">
+                        ${optionsHtml}
+                    </div>
+                    <div class="dice-container" id="dice-container" style="display: none;">
+                        <div class="dice-wrapper">
+                            <div class="dice" id="result-dice">?</div>
+                            <div class="dice-label">Roll</div>
+                        </div>
+                        <div class="dice-wrapper">
+                            <div class="modifier-display">+${getModifier(game.primaryAttr)}</div>
+                            <div class="dice-label">Modifier</div>
+                        </div>
+                    </div>
+                    <div id="challenge-result" style="display: none;"></div>
+                </div>
+            `;
+
+            showModal(content);
+            window.currentChallenge = { gameId, question };
+        }
+
+        function answerChallenge(gameId, selected, correct) {
+            const game = MINI_GAMES[gameId];
+            const question = window.currentChallenge.question;
+
+            // Disable all options
+            $$('.challenge-option').forEach(btn => btn.disabled = true);
+
+            // Highlight correct/incorrect
+            const options = $$('.challenge-option');
+            options[correct].style.borderColor = 'var(--success)';
+            options[correct].style.background = 'rgba(46, 125, 50, 0.3)';
+            if (selected !== correct) {
+                options[selected].style.borderColor = 'var(--danger)';
+                options[selected].style.background = 'rgba(139, 0, 0, 0.3)';
+            }
+
+            // Show quote
+            const quoteHtml = `
+                <div class="story-quote" style="margin: 1rem 0;">
+                    ${question.quote}
+                    <cite>— ${question.source}</cite>
+                </div>
+            `;
+
+            // Roll dice
+            $('#dice-container').style.display = 'flex';
+            const dice = $('#result-dice');
+            dice.classList.add('rolling');
+
+            setTimeout(() => {
+                const roll = rollDice(1)[0];
+                const modifier = getModifier(game.primaryAttr);
+                const total = roll + modifier;
+                const success = total >= game.cr;
+                const criticalSuccess = roll === 6 && success;
+                const criticalFailure = roll === 1;
+
+                dice.classList.remove('rolling');
+                dice.textContent = roll;
+
+                setTimeout(() => {
+                    const key = `${gameState.currentLocation}_${gameId}_day${gameState.day}`;
+                    const isCorrect = selected === correct;
+                    const finalSuccess = success && isCorrect;
+
+                    let resultHtml = '';
+                    let reward = 0;
+                    let hpChange = 0;
+                    let sanityChange = 0;
+                    let itemReward = null;
+
+                    if (criticalSuccess || finalSuccess) {
+                        // Success!
+                        gameState.challengesCompleted[key] = true;
+                        gameState.gamesPlayedToday++;
+
+                        if (criticalSuccess) {
+                            reward = game.cr * 5;
+                            sanityChange = 5;
+                            resultHtml = `
+                                <div class="result-critical">CRITICAL SUCCESS!</div>
+                                <p>Your legendary performance has earned great rewards!</p>
+                            `;
+                        } else {
+                            reward = game.cr * 3;
+                            resultHtml = `
+                                <div class="result-success">SUCCESS!</div>
+                                <p>You completed the challenge!</p>
+                            `;
+                        }
+
+                        // Random item chance
+                        if (Math.random() < 0.2) {
+                            const randomItem = SHOP_ITEMS[Math.floor(Math.random() * SHOP_ITEMS.length)];
+                            itemReward = randomItem;
+                            gameState.player.inventory.push(randomItem);
+                            resultHtml += `<p style="color: var(--accent);">You found: ${randomItem.name}!</p>`;
+                        }
+
+                        // Update story flags based on location
+                        updateStoryFlags(gameId, true);
+
+                    } else {
+                        // Failure
+                        reward = game.cr;
+                        hpChange = -10;
+                        sanityChange = criticalFailure ? -20 : -10;
+                        resultHtml = `
+                            <div class="result-failure">FAILURE</div>
+                            <p>${criticalFailure ? 'Critical failure! ' : ''}You struggled with the challenge.</p>
+                        `;
+
+                        updateStoryFlags(gameId, false);
+                    }
+
+                    gameState.player.gold += reward;
+                    gameState.player.hp = Math.max(0, Math.min(gameState.player.maxHp, gameState.player.hp + hpChange));
+                    gameState.player.sanity = Math.max(0, Math.min(gameState.player.maxSanity, gameState.player.sanity + sanityChange));
+
+                    resultHtml += `
+                        ${quoteHtml}
+                        <div style="margin: 1rem 0;">
+                            <strong>Results:</strong><br>
+                            Gold: +${reward}<br>
+                            ${hpChange !== 0 ? `Health: ${hpChange > 0 ? '+' : ''}${hpChange}<br>` : ''}
+                            ${sanityChange !== 0 ? `Sanity: ${sanityChange > 0 ? '+' : ''}${sanityChange}<br>` : ''}
+                        </div>
+                    `;
+
+                    $('#challenge-result').innerHTML = resultHtml;
+                    $('#challenge-result').style.display = 'block';
+
+                    saveGame();
+                    updateHUD();
+                    updateLocationInfo();
+
+                    // Check for game progression
+                    checkGameProgress();
+
+                    // Add continue button
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'btn';
+                    continueBtn.textContent = 'Continue';
+                    continueBtn.onclick = () => {
+                        closeModal();
+                        updateLocationInfo();
+                    };
+                    $('#challenge-result').appendChild(continueBtn);
+
+                }, 500);
+            }, 800);
+        }
+
+        function updateStoryFlags(gameId, success) {
+            // Update story progression based on challenges
+            if (gameId.includes('witch')) {
+                gameState.storyFlags.metWitches = true;
+                gameState.storyFlags.collectedKnowledge++;
+            }
+            if (gameId.includes('honor') || gameId.includes('loyalty')) {
+                gameState.storyFlags.collectedKnowledge++;
+            }
+
+            // Unlock locations based on day and progress
+            if (gameState.day >= 2) {
+                gameState.storyFlags.unlocked_cawdor = true;
+                gameState.storyFlags.unlocked_inverness = true;
+            }
+            if (gameState.day >= 3) {
+                gameState.storyFlags.unlocked_glamis = true;
+                gameState.storyFlags.unlocked_dunsinane = true;
+            }
+            if (gameState.day >= 4) {
+                gameState.storyFlags.unlocked_fife = true;
+            }
+            if (gameState.day >= 5) {
+                gameState.storyFlags.unlocked_birnham = true;
+            }
+
+            updateMap();
+        }
+
+        function checkGameProgress() {
+            // Check if game should end
+            if (gameState.player.hp <= 0) {
+                endGame('defeat');
+            } else if (gameState.player.sanity <= 0) {
+                endGame('madness');
+            } else if (gameState.day > gameState.maxDays) {
+                determineEnding();
+            }
+        }
+
+        // ============================================
+        // SHOP & INVENTORY
+        // ============================================
+
+        function openShop() {
+            const gold = gameState.player.gold;
+            const shopHtml = SHOP_ITEMS.map(item => `
+                <div class="shop-item">
+                    <div class="shop-item-icon">${item.icon}</div>
+                    <div class="shop-item-name">${item.name}</div>
+                    <div class="shop-item-price">${item.price} Gold</div>
+                    <div class="shop-item-effect">${item.effect}</div>
+                    <button class="buy-btn"
+                            onclick="buyItem('${item.id}')"
+                            ${gameState.player.gold < item.price ? 'disabled' : ''}>
+                        ${gameState.player.inventory.filter(i => i.id === item.id).length > 0 ? 'Already Owned' : 'Buy'}
+                    </button>
+                </div>
+            `).join('');
+
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">The Merchant's Wares</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <p style="text-align: center; margin-bottom: 1rem; color: var(--accent);">Your Gold: ${gold}</p>
+                <div class="shop-grid">
+                    ${shopHtml}
+                </div>
+            `;
+
+            showModal(content);
+        }
+
+        function buyItem(itemId) {
+            const item = SHOP_ITEMS.find(i => i.id === itemId);
+            if (!item || gameState.player.gold < item.price) {
+                showToast('Not enough gold!', 'error');
+                return;
+            }
+
+            // Check if item is already owned (for equipment)
+            if (!item.consumable && gameState.player.inventory.some(i => i.id === itemId)) {
+                showToast('You already own this item!', 'error');
+                return;
+            }
+
+            gameState.player.gold -= item.price;
+            gameState.player.inventory.push({ ...item });
+
+            // Apply equipment modifiers
+            if (item.modifier) {
+                const equipKey = `equip_${itemId}`;
+                gameState.modifierEquipment[equipKey] = item.modifier;
+            }
+
+            saveGame();
+            updateHUD();
+            updateAttributesPanel();
+            showToast(`Purchased ${item.name}!`, 'success');
+            openShop(); // Refresh shop
+        }
+
+        function openInventory() {
+            const inventory = gameState.player.inventory;
+            let invHtml = '';
+
+            if (inventory.length === 0) {
+                invHtml = '<div class="empty-inventory">Your inventory is empty</div>';
+            } else {
+                invHtml = inventory.map((item, index) => `
+                    <div class="inventory-item">
+                        <div class="inventory-item-icon">${item.icon}</div>
+                        <div class="inventory-item-name">${item.name}</div>
+                        <div class="inventory-item-effect">${item.effect}</div>
+                        ${item.consumable ? `
+                            <button class="use-btn" onclick="useItem(${index})">Use</button>
+                        ` : '<span style="color: var(--success); font-size: 0.8rem;">Equipped</span>'}
+                    </div>
+                `).join('');
+            }
+
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">Your Inventory</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="inventory-grid">
+                    ${invHtml}
+                </div>
+            `;
+
+            showModal(content);
+        }
+
+        function useItem(index) {
+            const item = gameState.player.inventory[index];
+            if (!item || !item.consumable) return;
+
+            // Apply effect
+            if (item.id === 'health_potion') {
+                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
+                showToast('Restored 20 HP!', 'success');
+            } else if (item.id === 'sanity_elixir') {
+                gameState.player.sanity = Math.min(gameState.player.maxSanity, gameState.player.sanity + 15);
+                showToast('Restored 15 Sanity!', 'success');
+            } else if (item.id === 'lucky_charm') {
+                // Next roll gets +3 bonus (handled in roll logic)
+                showToast('Lucky Charm activated! Next roll +3!', 'success');
+            }
+
+            // Remove from inventory
+            gameState.player.inventory.splice(index, 1);
+            saveGame();
+            updateHUD();
+            openInventory();
+        }
+
+        function openCharacterInfo() {
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">Character Info</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; border: 3px solid var(--accent); overflow: hidden;">
+                        <svg viewBox="0 0 100 100" style="width:100%;height:100%">
+                            <circle cx="50" cy="50" r="45" fill="${TOKENS.find(t => t.id === gameState.player.token)?.color || '#333'}"/>
+                            <circle cx="50" cy="35" r="18" fill="#E8DCC4"/>
+                            <path d="M25 85 Q50 55 75 85" fill="#E8DCC4"/>
+                        </svg>
+                    </div>
+                    <h3 style="margin-top: 1rem; font-family: 'MedievalSharp', cursive; color: var(--accent);">${gameState.player.name}</h3>
+                    <p style="opacity: 0.7;">${TOKENS.find(t => t.id === gameState.player.token)?.name || 'Unknown'}</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+                    <div>
+                        <strong>Gold</strong><br>
+                        <span style="color: var(--accent);">${gameState.player.gold}</span>
+                    </div>
+                    <div>
+                        <strong>Day</strong><br>
+                        <span>${gameState.day} of ${gameState.maxDays}</span>
+                    </div>
+                    <div>
+                        <strong>Health</strong><br>
+                        <span style="color: #ff4444;">${gameState.player.hp}/${gameState.player.maxHp}</span>
+                    </div>
+                    <div>
+                        <strong>Sanity</strong><br>
+                        <span style="color: #9b6dff;">${gameState.player.sanity}/${gameState.player.maxSanity}</span>
+                    </div>
+                </div>
+                <h4 style="margin: 1.5rem 0 1rem; color: var(--accent);">Attributes</h4>
+                <div style="display: grid; gap: 0.5rem;">
+                    ${ATTRIBUTES.map(attr => {
+                        const value = gameState.player.attributes[attr.id];
+                        const mod = getModifier(attr.id);
+                        return `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${attr.icon} ${attr.name}</span>
+                                <span>${value} (${mod >= 0 ? '+' : ''}${mod})</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Story Progress</h4>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">
+                        ${gameState.storyFlags.metWitches ? '✓ Met the Weird Sisters' : '✗ Have not met the Weird Sisters'}<br>
+                        ${gameState.storyFlags.collectedKnowledge >= 5 ? '✓ Deep understanding of fate' : `Knowledge: ${gameState.storyFlags.collectedKnowledge}/5`}<br>
+                        Location: ${LOCATIONS[gameState.currentLocation].name}
+                    </div>
+                </div>
+            `;
+
+            showModal(content);
+        }
+
+        // ============================================
+        // DAY PROGRESSION & ENDINGS
+        // ============================================
+
+        function advanceDay() {
+            if (gameState.day >= gameState.maxDays) {
+                determineEnding();
+                return;
+            }
+
+            gameState.day++;
+            gameState.gamesPlayedToday = 0;
+
+            // Restore some health and sanity
+            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
+            gameState.player.sanity = Math.min(gameState.player.maxSanity, gameState.player.sanity + 10);
+
+            saveGame();
+            updateHUD();
+            updateLocationInfo();
+
+            // Show day transition
+            showDayTransition();
+        }
+
+        function showDayTransition() {
+            const actTitles = {
+                1: 'Act I: "Fair is Foul"',
+                2: 'Act II: "The Murder"',
+                3: 'Act III: "The Banquet"',
+                4: 'Act IV: "The Witches"',
+                5: 'Act V: "The Final Battle"'
+            };
+
+            const dayQuotes = {
+                2: '"Is this a dagger which I see before me?" — Act II, Scene I',
+                3: '"There is none but he whose being I do fear." — Act III, Scene I',
+                4: '"Double, double, toil and trouble; fire burn and cauldron bubble." — Act IV, Scene I',
+                5: '"Out, damned spot! out, I say!" — Act V, Scene I'
+            };
+
+            const content = `
+                <div class="modal-header">
+                    <h2 class="modal-title">Day ${gameState.day}</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="story-text" style="text-align: center;">
+                    <h3 style="font-family: 'MedievalSharp', cursive; color: var(--accent); margin-bottom: 1rem;">${actTitles[gameState.day] || 'The Final Day'}</h3>
+                    ${dayQuotes[gameState.day] ? `
+                        <div class="story-quote">
+                            ${dayQuotes[gameState.day]}
+                        </div>
+                    ` : ''}
+                    <p>You rest through the night. The events of the day weigh heavily on your mind.</p>
+                    <p style="margin-top: 1rem;">
+                        <strong>Status Restored:</strong><br>
+                        Health: +20<br>
+                        Sanity: +10
+                    </p>
+                    <p style="margin-top: 1rem; color: var(--magic);">
+                        New locations may have unlocked...
+                    </p>
+                </div>
+                <div class="story-choices">
+                    <button class="btn" onclick="closeModal(); showToast('A new day begins!')">Face the New Day</button>
+                </div>
+            `;
+
+            showModal(content);
+        }
+
+        function determineEnding() {
+            // Calculate ending based on various factors
+            let endingType = 'neutral';
+
+            // Good ending: High knowledge, joined rebellion, good sanity
+            if (gameState.storyFlags.collectedKnowledge >= 5 && gameState.player.sanity > 50) {
+                endingType = 'good';
+            }
+            // Secret ending: Very high knowledge
+            else if (gameState.storyFlags.collectedKnowledge >= 7) {
+                endingType = 'secret';
+            }
+            // Dark ending: Low sanity, dark choices
+            else if (gameState.player.sanity < 30) {
+                endingType = 'dark';
+            }
+
+            endGame(endingType);
+        }
+
+        function endGame(type) {
+            gameState.gameComplete = true;
+            saveGame();
+
+            const ending = ENDINGS[type];
+
+            $('#game-screen').style.display = 'none';
+            $('#game-over').style.display = 'block';
+
+            $('#ending-title').textContent = ending.title;
+            $('#ending-subtitle').textContent = ending.subtitle;
+            $('#ending-text').innerHTML = ending.text;
+            $('#final-quote').innerHTML = ending.quote;
+
+            $('#final-stats').innerHTML = `
+                <div class="final-stat">
+                    <span>Days Survived</span>
+                    <span>${gameState.day}</span>
+                </div>
+                <div class="final-stat">
+                    <span>Gold Earned</span>
+                    <span>${gameState.player.gold}</span>
+                </div>
+                <div class="final-stat">
+                    <span>Final Health</span>
+                    <span>${gameState.player.hp}</span>
+                </div>
+                <div class="final-stat">
+                    <span>Final Sanity</span>
+                    <span>${gameState.player.sanity}</span>
+                </div>
+                <div class="final-stat">
+                    <span>Challenges Completed</span>
+                    <span>${Object.keys(gameState.challengesCompleted).filter(k => gameState.challengesCompleted[k]).length}</span>
+                </div>
+            `;
+        }
+
+        function goToTitle() {
+            $('#game-over').style.display = 'none';
+            $('#title-screen').style.display = 'flex';
+            $('#continue-btn').style.display = gameState.gameComplete ? 'none' : 'block';
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for saved game
+            if (localStorage.getItem('macbethGame')) {
+                $('#continue-btn').style.display = 'block';
+            }
+
+            // Modal close on overlay click
+            $('#modal-overlay').addEventListener('click', (e) => {
+                if (e.target === $('#modal-overlay')) {
+                    // Don't close during active challenges
+                }
+            });
+        });
+    </script>
+</body>
+</html>
