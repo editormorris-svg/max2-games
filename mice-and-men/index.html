@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Of Mice and Men - Interactive Adventure</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Georgia, serif;
+            background: linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #3d2817 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .game { max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 2.5em; color: #d4a574; text-align: center; margin: 30px 0 10px; }
+        h2 { font-size: 1.8em; color: #d4a574; text-align: center; margin-bottom: 20px; }
+        .subtitle { text-align: center; color: #8b7355; font-style: italic; margin-bottom: 30px; }
+        .quote { text-align: center; font-style: italic; color: #a08060; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 10px; margin: 20px 0; }
+        .intro-text { text-align: center; color: #ccc; line-height: 1.8; max-width: 600px; margin: 20px auto; }
+        .story-text { background: rgba(0,0,0,0.3); padding: 25px; border-radius: 15px; border-left: 4px solid #8b5a2b; line-height: 1.8; color: #ccc; margin: 20px 0; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .btn {
+            display: block;
+            width: 250px;
+            margin: 30px auto;
+            padding: 18px 30px;
+            background: linear-gradient(135deg, #8b5a2b, #6b4423);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .btn:hover { background: linear-gradient(135deg, #a06830, #7d5030); transform: translateY(-2px); }
+        .btn-small { padding: 12px 25px; font-size: 1em; width: auto; margin: 10px; display: inline-block; }
+        .btn-row { text-align: center; margin-top: 20px; }
+        .form-box { max-width: 500px; margin: 30px auto; }
+        .form-box input { width: 100%; padding: 15px; font-size: 1.1em; border: 2px solid #5a4030; border-radius: 10px; background: rgba(255,255,255,0.1); color: white; margin: 10px 0; }
+        .form-box input:focus { outline: none; border-color: #d4a574; }
+        .tokens { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .token {
+            width: 60px; height: 60px;
+            border: 3px solid #5a4030;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8em;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+        }
+        .token:hover, .token.selected { border-color: #ffd700; background: rgba(255,215,0,0.2); }
+        .attrs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; max-width: 600px; margin: 20px auto; }
+        .attr-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 2px solid #5a4030; }
+        .attr-card h4 { color: #d4a574; margin-bottom: 8px; }
+        .attr-val { font-size: 1.8em; color: #ffd700; margin: 10px 0; }
+        .attr-btn { width: 35px; height: 35px; border-radius: 50%; border: none; font-size: 1.2em; cursor: pointer; margin: 0 5px; }
+        .attr-btn.minus { background: #8b3a3a; color: white; }
+        .attr-btn.plus { background: #5d7a3d; color: white; }
+        .attr-btn:disabled { opacity: 0.3; }
+        .points { text-align: center; font-size: 1.2em; color: #d4a574; margin: 15px 0; }
+        .stats-bar { background: rgba(0,0,0,0.3); padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .player-info { display: flex; align-items: center; gap: 12px; }
+        .player-token { width: 45px; height: 45px; border-radius: 50%; background: #5a4030; display: flex; align-items: center; justify-content: center; font-size: 1.3em; border: 2px solid #d4a574; }
+        .player-name { font-weight: bold; font-size: 1.2em; }
+        .stats { display: flex; gap: 20px; flex-wrap: wrap; }
+        .stat { text-align: center; }
+        .stat-label { font-size: 0.7em; color: #888; }
+        .stat-val { font-size: 1.1em; color: #ffd700; }
+        .money { font-size: 1.2em; color: #ffd700; }
+        .day-badge { background: #5d7a3d; padding: 8px 15px; border-radius: 20px; }
+        .trust-badge { background: #8b5a2b; padding: 8px 15px; border-radius: 20px; }
+        .map { background: rgba(0,0,0,0.2); border-radius: 15px; padding: 25px; min-height: 350px; position: relative; }
+        .map-title { text-align: center; color: #d4a574; margin-bottom: 20px; }
+        .location { position: absolute; width: 120px; text-align: center; cursor: pointer; padding: 10px; border-radius: 10px; transition: all 0.3s; }
+        .location:hover { transform: scale(1.08); background: rgba(139,90,43,0.3); }
+        .location.locked { opacity: 0.5; cursor: not-allowed; }
+        .location-icon { width: 50px; height: 50px; border-radius: 50%; background: #5a4030; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; border: 2px solid #8b5a2b; }
+        .location.locked .location-icon { background: #444; border-color: #555; }
+        .location-name { font-size: 0.85em; color: #ddd; }
+        .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .shop-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 2px solid #5a4030; }
+        .shop-item:hover { border-color: #d4a574; }
+        .shop-icon { font-size: 2em; margin-bottom: 8px; }
+        .shop-name { color: #ddd; margin-bottom: 5px; }
+        .shop-desc { color: #888; font-size: 0.85em; margin-bottom: 8px; }
+        .shop-price { color: #ffd700; margin-bottom: 8px; }
+        .quiz-question { font-size: 1.2em; text-align: center; margin: 20px 0; color: #d4a574; }
+        .quiz-options { display: grid; gap: 10px; max-width: 500px; margin: 0 auto; }
+        .quiz-option { padding: 15px 20px; background: rgba(255,255,255,0.1); border: 2px solid #5a4030; border-radius: 8px; cursor: pointer; text-align: center; }
+        .quiz-option:hover { background: rgba(139,90,43,0.3); border-color: #8b5a2b; }
+        .quiz-option.correct { background: rgba(93,122,61,0.4); border-color: #5d7a3d; }
+        .quiz-option.wrong { background: rgba(139,58,58,0.4); border-color: #8b3a3a; }
+        .work-game { text-align: center; padding: 30px; }
+        .work-progress { width: 100%; max-width: 400px; height: 25px; background: #333; border-radius: 12px; margin: 20px auto; overflow: hidden; }
+        .work-fill { height: 100%; background: linear-gradient(90deg, #8b5a2b, #d4a574); width: 0%; transition: width 0.1s; }
+        .work-target { color: #d4a574; font-weight: bold; margin: 15px 0; }
+        .minigame-box { background: rgba(0,0,0,0.4); padding: 30px; border-radius: 15px; max-width: 600px; margin: 20px auto; }
+        .minigame-title { text-align: center; font-size: 1.5em; color: #d4a574; margin-bottom: 10px; }
+        .minigame-quote { text-align: center; font-style: italic; color: #888; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 15px; }
+        .result-box { text-align: center; padding: 30px; }
+        .result-icon { font-size: 4em; margin-bottom: 15px; }
+        .choices { margin-top: 20px; }
+        .choice-btn { display: block; width: 100%; padding: 15px 20px; margin: 10px 0; background: rgba(255,255,255,0.1); border: 2px solid #5a4030; border-radius: 8px; color: white; cursor: pointer; text-align: left; font-size: 1em; }
+        .choice-btn:hover { background: rgba(139,90,43,0.3); border-color: #8b5a2b; }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .choice-req { font-size: 0.8em; color: #888; }
+        .dice-result { text-align: center; font-size: 1.5em; margin: 20px 0; }
+        .dice-emoji { font-size: 4em; animation: roll 1s ease; }
+        @keyframes roll { 0% { transform: rotate(0deg) scale(0); } 50% { transform: rotate(360deg) scale(1.2); } 100% { transform: rotate(720deg) scale(1); } }
+        .success { color: #8fbc8f; }
+        .fail { color: #cd5c5c; }
+        .ending-title { font-size: 2.2em; text-align: center; margin: 30px 0; }
+        .ending-perfect { color: #ffd700; }
+        .ending-good { color: #8fbc8f; }
+        .ending-tragic { color: #cd5c5c; }
+        .ending-bad { color: #666; }
+        .inventory { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .inv-item { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 15px; }
+        .trust-bar { width: 100%; height: 20px; background: #333; border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .trust-fill { height: 100%; background: #5d7a3d; transition: width 0.3s; }
+        @media (max-width: 768px) {
+            .attrs { grid-template-columns: repeat(2, 1fr); }
+            .shop-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-bar { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game">
+        <!-- Screen 0: Title -->
+        <div id="screen-0" class="screen active">
+            <h1>Of Mice and Men</h1>
+            <div class="subtitle">An Interactive Adventure</div>
+            <div class="quote">"The best-laid plans of mice and men often go awry."<br><small>— John Steinbeck</small></div>
+            <div class="intro-text">
+                Step into the dust bowls of 1930s California. Work alongside George and Lennie 
+                on a Salinas Valley ranch. Face the harsh realities of the Great Depression, 
+                make crucial choices, and determine the fate of your friends.
+            </div>
+            <button class="btn" id="btn-begin">Begin Your Journey</button>
+        </div>
+
+        <!-- Screen 1: Story Intro -->
+        <div id="screen-1" class="screen">
+            <h2>Your Story Begins</h2>
+            <div class="story-text">
+                <p>The bus dropped you off miles from the ranch. Walking through the dusty California landscape, 
+                you think about why you're here — the dream of a better life, a piece of land, freedom from wandering.</p>
+                <br>
+                <p>When you reach the ranch, you meet the workers: George and his large, simple-minded companion Lennie, 
+                Curley the boss's aggressive son, his lonely wife, the stable buck Crooks, and many more.</p>
+                <br>
+                <p style="color:#d4a574;">The dream of owning your own land burns bright. Will you help George and Lennie achieve their dream?</p>
+            </div>
+            <button class="btn" id="btn-continue">Continue</button>
+        </div>
+
+        <!-- Screen 2: Name -->
+        <div id="screen-2" class="screen">
+            <h2>Choose Your Name</h2>
+            <div class="form-box">
+                <input type="text" id="input-name" placeholder="Enter your name..." maxlength="20">
+            </div>
+            <button class="btn" id="btn-name" disabled>Continue</button>
+        </div>
+
+        <!-- Screen 3: Token -->
+        <div id="screen-3" class="screen">
+            <h2>Choose Your Look</h2>
+            <p style="text-align:center;color:#aaa;margin-bottom:20px;">Select a token that represents you.</p>
+            <div class="tokens" id="tokens"></div>
+            <button class="btn" id="btn-token" disabled>Continue</button>
+        </div>
+
+        <!-- Screen 4: Attributes -->
+        <div id="screen-4" class="screen">
+            <h2>Build Your Character</h2>
+            <p style="text-align:center;color:#aaa;margin-bottom:15px;">You have 5 points to distribute.</p>
+            <div class="points">Points Remaining: <span id="points-left">5</span></div>
+            <div class="attrs" id="attrs"></div>
+            <button class="btn" id="btn-start" disabled>Start Adventure</button>
+        </div>
+
+        <!-- Screen 5: Main Game -->
+        <div id="screen-5" class="screen">
+            <div class="stats-bar">
+                <div class="player-info">
+                    <div class="player-token" id="player-token">👤</div>
+                    <div class="player-name" id="player-name">Traveler</div>
+                </div>
+                <div class="stats">
+                    <div class="stat"><div class="stat-label">STR</div><div class="stat-val" id="stat-str">5</div></div>
+                    <div class="stat"><div class="stat-label">SKL</div><div class="stat-val" id="stat-skl">5</div></div>
+                    <div class="stat"><div class="stat-label">CHA</div><div class="stat-val" id="stat-cha">5</div></div>
+                    <div class="stat"><div class="stat-label">LCK</div><div class="stat-val" id="stat-lck">5</div></div>
+                </div>
+                <div class="money">💵 <span id="money">15</span></div>
+                <div class="day-badge">Day <span id="day">1</span></div>
+                <div class="trust-badge">Trust: <span id="trust">75</span>%</div>
+            </div>
+
+            <div class="map">
+                <div class="map-title">Salinas Valley Ranch - 1937</div>
+                <div id="locations"></div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-small" id="btn-shop">🛒 Store</button>
+                <button class="btn-small btn-secondary" id="btn-inventory">🎒 Inventory</button>
+                <button class="btn-small btn-success" id="btn-story">📖 Story</button>
+            </div>
+        </div>
+
+        <!-- Screen 6: Minigame -->
+        <div id="screen-6" class="screen">
+            <div class="minigame-box">
+                <div class="minigame-title" id="mg-title"></div>
+                <div class="minigame-quote" id="mg-quote"></div>
+                <div id="mg-content"></div>
+            </div>
+            <button class="btn-small btn-secondary" id="btn-back">← Return</button>
+        </div>
+
+        <!-- Screen 7: Shop -->
+        <div id="screen-7" class="screen">
+            <h2>Ranch General Store</h2>
+            <div class="shop-grid" id="shop-list"></div>
+            <button class="btn-small btn-secondary" id="btn-shop-back">← Back</button>
+        </div>
+
+        <!-- Screen 8: Inventory -->
+        <div id="screen-8" class="screen">
+            <h2>Your Belongings</h2>
+            <div class="inventory" id="inv-list"></div>
+            <div style="margin-top:30px;padding:20px;background:rgba(0,0,0,0.2);border-radius:10px;">
+                <h4 style="color:#d4a574;">🎯 Lennie's Trust</h4>
+                <p style="color:#aaa;margin-top:10px;">Keep Lennie's trust high! If it drops too low, he won't listen to your guidance.</p>
+                <div class="trust-bar"><div class="trust-fill" id="trust-bar" style="width:75%;"></div></div>
+                <p style="text-align:center;color:#d4a574;margin-top:8px;"><span id="trust-percent">75</span>%</p>
+            </div>
+            <button class="btn-small btn-secondary" id="btn-inv-back">← Back</button>
+        </div>
+
+        <!-- Screen 9: Story -->
+        <div id="screen-9" class="screen">
+            <div class="story-text" id="story-content"></div>
+            <button class="btn-small btn-secondary" id="btn-story-back">← Back</button>
+        </div>
+
+        <!-- Screen 10: Ending -->
+        <div id="screen-10" class="screen">
+            <div id="ending-content"></div>
+            <button class="btn" id="btn-restart">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const G = {
+            name: '', token: '👤',
+            str: 5, skl: 5, cha: 5, lck: 5,
+            points: 5, money: 15, day: 1, trust: 75,
+            inventory: [], progress: 0, visited: []
+        };
+
+        // Data
+        const TOKENS = ['👨','👨‍🌾','🤠','🧔','👴','💂','🤵','👷','🧑‍🔧','👨‍🦱','🧑‍🦰','👨‍🦳'];
+        const LOCATIONS = [
+            {id:'bunk', name:'Bunkhouse', icon:'🏠', x:50, y:150, type:'work', stat:'str', reward:8, quote:'"Guys like us, that work on ranches, are the loneliest guys in the world."', src:'— George'},
+            {id:'ranch', name:'Main Ranch', icon:'🌾', x:250, y:80, type:'quiz', stat:'skl', reward:10, quote:'"I got you in my pocket."', src:'— Curley'},
+            {id:'barn', name:'The Barn', icon:'🏥', x:450, y:130, type:'work', stat:'str', reward:12, quote:'"Babe the blue ox."', src:'— Lennie'},
+            {id:'crooks', name:"Crooks' Room", icon:'📚', x:100, y:280, type:'card', stat:'lck', reward:15, quote:'"A guy goes nuts if he ain\'t got nobody."', src:'— Crooks'},
+            {id:'town', name:'Salinas Town', icon:'🏘️', x:380, y:260, type:'quiz', stat:'cha', reward:12, quote:'"An\' live off the fatta the lan\'."', src:"— Lennie's Dream"},
+            {id:'river', name:'The River', icon:'🌊', x:600, y:100, type:'memory', stat:'lck', reward:20, quote:'"If you ain\'t got him, you can\'t eat."', src:'— George'}
+        ];
+        const SHOP = [
+            {id:'food', name:'Hot Meal', icon:'🍲', price:3, effect:'trust', val:5, desc:'Share with Lennie (+5 Trust)'},
+            {id:'whiskey', name:'Whiskey', icon:'🥃', price:5, effect:'lck', val:2, desc:'+2 Luck'},
+            {id:'glove', name:'Work Gloves', icon:'🧤', price:8, effect:'str', val:1, desc:'+1 Strength'},
+            {id:'rabbit', name:'Rubber Rabbit', icon:'🐰', price:10, effect:'trust', val:15, desc:"Lennie's favorite (+15 Trust)"},
+            {id:'beer', name:'Six-Pack', icon:'🍺', price:12, effect:'all', val:1, desc:'+1 all stats'},
+            {id:'map', name:'Dream Map', icon:'🗺️', price:25, effect:'special', val:1, desc:'The farm they dream of', special:true}
+        ];
+        const QUIZ = [
+            {q:'What year is it in the story?', o:['1929','1937','1945','1930'], c:1},
+            {q:'What state is the ranch in?', o:['Nevada','California','Texas','Arizona'], c:1},
+            {q:'What does Lennie like to touch?', o:['Dogs','Cats','Soft things','Birds'], c:2},
+            {q:'Who says "I got you in my pocket"?', o:['George','Curley','Carlson','Slim'], c:1},
+            {q:"What color is Curley's wife's hair?", o:['Black','Red','Yellow','Brown'], c:2},
+            {q:'What animal does Lennie kill in the barn?', o:['A mouse','A puppy','A chicken','A calf'], c:1},
+            {q:'Who is Crooks?', o:['The boss','A stable buck','A swamper','Curley\'s father'], c:1},
+            {q:"What is George and Lennie's dream?", o:['A house','Owning a farm','Hollywood','Finding gold'], c:1}
+        ];
+        const SCENES = [
+            {day:1,title:'Arrival at the Ranch',text:'<p>Your first day at the ranch. The boss scrutinizes you. George introduces himself and Lennie — two men bound by an unusual friendship and a shared dream.</p><div class="quote" style="margin-top:15px;">"We got kind of used to each other, you wouldn\'t say?"<br>— George</div><p>Curley, the boss\'s aggressive son, sizes you up from across the room.</p>',opts:[
+                {text:'Be confident and strong',stat:'str',success:'You make a good first impression.'},
+                {text:'Show your skills and experience',stat:'skl',success:'The boss nods approvingly.'},
+                {text:'Be friendly and charming',stat:'cha',success:'George welcomes you warmly.'}
+            ]},
+            {day:1,title:'The Bunkhouse',text:'<p>The bunkhouse is your new home. Candy, the old swamper, warns you about trouble — Curley, his wife, and the dangers of this place.</p><div class="quote" style="margin-top:15px;">"I seen plenty of them. They got eyes in their heads and they got往脑子里看。"<br>— Candy</div><p>Through the window, you see Lennie playing with his puppy.</p>',opts:[
+                {text:'Help Lennie with the puppy',stat:'cha',success:'Lennie beams. Trust increased!'},
+                {text:'Explore the ranch with George',stat:'skl',success:'You learn the lay of the land.'},
+                {text:'Challenge Curley to a fight',stat:'str',success:'You earn respect, but make an enemy.'}
+            ]},
+            {day:2,title:"Crooks' Quarters",text:'<p>You visit Crooks, the black stable buck. His room is filled with books. He tells you about his loneliness, and Lennie\'s disability. He mentions George and Lennie\'s dream — the farm.</p><div class="quote" style="margin-top:15px;">"A guy goes nuts if he ain\'t got nobody. Don\'t make no difference who the guy is."<br>— Crooks</div>',opts:[
+                {text:'Tell him about the farm',stat:'cha',success:"Crooks smiles — maybe hope exists."},
+                {text:'Listen to his stories',stat:'lck',success:'He gives you valuable advice.'},
+                {text:'Leave him alone',stat:'str',success:'He respects your boundaries.'}
+            ]},
+            {day:2,title:"Curley's Wife",text:'<p>Curley\'s wife finds you in the barn, alone. She\'s lonely, bitter, seeking attention. She speaks of her dreams of being a movie star, now crushed. Lennie is fascinated by her hair.</p><div class="quote" style="margin-top:15px;">"Why can\'t I talk to you? I ain\'t doing no harm."<br>— Curley\'s Wife</div>',opts:[
+                {text:'Be kind and listen',stat:'cha',success:'She thanks you for treating her like a person.'},
+                {text:'Warn her about Lennie',stat:'skl',success:'She becomes cautious.'},
+                {text:'Stay away from her',stat:'lck',success:'Smart move. Tension rises.'}
+            ]},
+            {day:3,title:'The Fight',text:'<p>Curley attacks Lennie. The ranch hands gather. George shouts instructions. Lennie could crush Curley\'s hand.</p><div class="quote" style="margin-top:15px;">"Get him, Lennie! Don\'t let him do it!"<br>— George</div><p>Everything depends on what happens next.</p>',opts:[
+                {text:'Help Lennie fight back',stat:'str',success:'Together you overpower Curley.'},
+                {text:'Calm everyone down',stat:'cha',success:'Your intervention prevents serious harm.'},
+                {text:'Call for Slim',stat:'lck',success:'Slim arrives and mediates.'}
+            ]},
+            {day:4,title:'Candy and His Dog',text:'<p>Candy shares his deepest regret — selling his dog. Carlson has been pushing to shoot the old, useless dog. His eyes are wet.</p><div class="quote" style="margin-top:15px;">"I ought to of shot that dog myself, George. I shouldn\'t ought to of let no stranger shoot him."<br>— Candy</div>',opts:[
+                {text:'Stay with Candy',stat:'cha',success:'Candy is grateful. He shares more about the dream.'},
+                {text:'Help Carlson shoot the dog',stat:'str',success:"Candy's pain fades quickly."},
+                {text:'Suggest Slim\'s dog instead',stat:'lck',success:'A controversial choice.'}
+            ]},
+            {day:5,title:'Lennie in the Barn',text:'<p>Curley nurses his crushed hand, bitter. Lennie is alone in the barn with his dead puppy — he accidentally killed it. He\'s crying.</p><div class="quote" style="margin-top:15px;">"If you don\'t want me I can go live in a cave."<br>— Lennie</div><p>Curley\'s wife finds Lennie...</p>',opts:[
+                {text:'Use the Rubber Rabbit',stat:'lck',req:'rabbit',success:'PERFECT: The rabbit calms Lennie!'},
+                {text:'Race to find George',stat:'str',success:'TRAGIC: You find George, but too late...'},
+                {text:'Try to calm him yourself',stat:'cha',success:'TRAGIC: Things get worse...'}
+            ]},
+            {day:6,title:'The Final Choice',text:'<p>Everything has fallen apart. Curley\'s wife is dead. Lennie has fled to the river. The men are hunting him with guns.</p><div class="quote" style="margin-top:15px;">"I want you to stay with me, Lennie. Me and you is gonna get that place..."<br>— George</div>',opts:[
+                {text:'Bring George to Lennie',stat:'lck',req:'map',success:'PERFECT ENDING'},
+                {text:'Help hunt Lennie',stat:'str',success:'BAD ENDING'},
+                {text:'Try to save Lennie yourself',stat:'cha',success:'TRAGIC ENDING'},
+                {text:'Give up',stat:'lck',success:'TRAGEDY'}
+            ]}
+        ];
+
+        // Navigation
+        function show(n) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-'+n).classList.add('active');
+        }
+
+        // Init
+        function init() {
+            // Render tokens
+            const tDiv = document.getElementById('tokens');
+            TOKENS.forEach((t,i) => {
+                const d = document.createElement('div');
+                d.className = 'token';
+                d.textContent = t;
+                d.onclick = () => selectToken(i);
+                tDiv.appendChild(d);
+            });
+
+            // Render attributes
+            const aDiv = document.getElementById('attrs');
+            [['str','Strength','💪'],['skl','Skill','🎯'],['cha','Charisma','💬'],['lck','Luck','🍀']].forEach(([k,n,icon]) => {
+                aDiv.innerHTML += `<div class="attr-card"><h4>${icon} ${n}</h4><div class="attr-val" id="attr-${k}">5</div><button class="attr-btn minus" onclick="adj('${k}',-1)">−</button><button class="attr-btn plus" onclick="adj('${k}',1)">+</button></div>`;
+            });
+
+            updateUI();
+        }
+
+        // Token selection
+        function selectToken(i) {
+            document.querySelectorAll('.token').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('.token')[i].classList.add('selected');
+            G.token = TOKENS[i];
+            document.getElementById('btn-token').disabled = false;
+        }
+
+        // Attribute adjustment
+        function adj(attr, delta) {
+            const newVal = G[attr] + delta;
+            const newPoints = G.points - delta;
+            if (newPoints < 0 || newVal < 5 || newVal > 10) return;
+            G[attr] = newVal;
+            G.points = newPoints;
+            document.getElementById('attr-'+attr).textContent = newVal;
+            document.getElementById('points-left').textContent = G.points;
+            document.getElementById('btn-start').disabled = G.points !== 0;
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('player-token').textContent = G.token;
+            document.getElementById('player-name').textContent = G.name || 'Traveler';
+            document.getElementById('stat-str').textContent = G.str;
+            document.getElementById('stat-skl').textContent = G.skl;
+            document.getElementById('stat-cha').textContent = G.cha;
+            document.getElementById('stat-lck').textContent = G.lck;
+            document.getElementById('money').textContent = G.money;
+            document.getElementById('day').textContent = G.day;
+            document.getElementById('trust').textContent = G.trust;
+            document.getElementById('trust-percent').textContent = G.trust;
+            document.getElementById('trust-bar').style.width = G.trust + '%';
+            renderLocations();
+        }
+
+        // Render locations
+        function renderLocations() {
+            const map = document.getElementById('locations');
+            map.innerHTML = '';
+            LOCATIONS.forEach(loc => {
+                const unlocked = G.day >= getUnlockDay(loc.id);
+                const d = document.createElement('div');
+                d.className = 'location' + (unlocked ? '' : ' locked');
+                d.style.left = loc.x + 'px';
+                d.style.top = loc.y + 'px';
+                d.innerHTML = `<div class="location-icon">${unlocked ? loc.icon : '🔒'}</div><div class="location-name">${loc.name}</div>`;
+                if (unlocked) d.onclick = () => visitLoc(loc);
+                map.appendChild(d);
+            });
+        }
+
+        function getUnlockDay(id) {
+            const d = {bunk:1, ranch:1, barn:2, crooks:3, town:4, river:5};
+            return d[id] || 1;
+        }
+
+        // Visit location
+        function visitLoc(loc) {
+            document.getElementById('mg-title').textContent = loc.name;
+            document.getElementById('mg-quote').innerHTML = loc.quote + '<br><small>' + loc.src + '</small>';
+            
+            const key = loc.id + '_' + G.day;
+            if (G.visited.includes(key)) {
+                document.getElementById('mg-content').innerHTML = '<p style="text-align:center;padding:40px;color:#aaa;">You\'ve already worked here today. Come back tomorrow!</p>';
+            } else {
+                if (loc.type === 'quiz') startQuiz(loc);
+                else if (loc.type === 'work') startWork(loc);
+                else if (loc.type === 'card') startCard(loc);
+                else if (loc.type === 'memory') startMemory(loc);
+            }
+            show(6);
+        }
+
+        // Quiz
+        function startQuiz(loc) {
+            const q = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+            document.getElementById('mg-content').innerHTML = `
+                <div class="quiz-question">${q.q}</div>
+                <div class="quiz-options">
+                    ${q.o.map((o,i) => `<div class="quiz-option" onclick="ansQuiz(${i},${q.c},'${loc.id}')">${o}</div>`).join('')}
+                </div>`;
+        }
+        window.ansQuiz = function(sel, cor, locId) {
+            const opts = document.querySelectorAll('.quiz-option');
+            opts.forEach((o,i) => { o.style.pointerEvents='none'; if(i===cor) o.classList.add('correct'); if(i===sel && sel!==cor) o.classList.add('wrong'); });
+            const loc = LOCATIONS.find(l=>l.id===locId);
+            setTimeout(() => finishMinigame(loc, sel===cor), 1200);
+        };
+
+        // Work
+        function startWork(loc) {
+            let prog = 0, clicks = 0;
+            const target = 10 + G[loc.stat] * 2;
+            document.getElementById('mg-content').innerHTML = `
+                <div class="work-game">
+                    <p>Click rapidly to complete work! Target: <span class="work-target">${target}</span></p>
+                    <div class="work-progress"><div class="work-fill" id="work-fill"></div></div>
+                    <p>Clicks: <span id="click-c">0</span>/15</p>
+                    <button class="btn" onclick="doWork('${loc.id}',${target})">💪 Work!</button>
+                </div>`;
+        }
+        window.doWork = function(locId, target) {
+            let prog = parseInt(document.getElementById('work-fill').style.width) || 0;
+            let clicks = parseInt(document.getElementById('click-c').textContent) || 0;
+            clicks++;
+            prog += Math.floor(Math.random() * 4) + 1 + Math.floor(G.str / 2);
+            document.getElementById('work-fill').style.width = Math.min(prog, 100) + '%';
+            document.getElementById('click-c').textContent = clicks;
+            if (prog >= target) {
+                const loc = LOCATIONS.find(l=>l.id===locId);
+                finishMinigame(loc, true);
+            } else if (clicks >= 15) {
+                const loc = LOCATIONS.find(l=>l.id===locId);
+                finishMinigame(loc, false);
+            }
+        };
+
+        // Card
+        function startCard(loc) {
+            const p = [Math.floor(Math.random()*10)+1, Math.floor(Math.random()*10)+1];
+            const d = [Math.floor(Math.random()*10)+1, Math.floor(Math.random()*10)+1];
+            const pt = p.reduce((a,b)=>a+b,0), dt = d.reduce((a,b)=>a+b,0);
+            document.getElementById('mg-content').innerHTML = `
+                <div class="result-box">
+                    <p>Dealer shows: ${d[0]} + ?</p>
+                    <p style="margin:15px 0;font-size:1.3em;">Your hand: ${p.join(' + ')} = ${pt}</p>
+                    <div class="result-box ${pt>dt?'success':'fail'}">${pt>dt?'You win!':'Dealer wins.'}</div>
+                    <button class="btn-small" onclick="finishCard('${loc.id}',${pt>dt})">Continue</button>
+                </div>`;
+        }
+        window.finishCard = function(locId, won) {
+            const loc = LOCATIONS.find(l=>l.id===locId);
+            G.visited.push(locId+'_'+G.day);
+            if (won) G.money += loc.reward;
+            updateUI();
+            show(5);
+        };
+
+        // Memory
+        function startMemory(loc) {
+            const sym = ['🐰','🌾','🐴','🌻'];
+            let cards = [...sym,...sym].sort(()=>Math.random()-0.5);
+            let flipped=[], matched=0;
+            function render() {
+                let html = '<div style="display:grid;grid-template-columns:repeat(4,60px);gap:8px;justify-content:center;">';
+                cards.forEach((c,i) => {
+                    html += `<div style="width:60px;height:60px;background:${flipped.includes(i)||matched>=4?'#8b5a2b':'#5a4030'};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.8em;cursor:pointer;" onclick="flipM(${i})">${flipped.includes(i)||matched>=4?c:'?'}</div>`;
+                });
+                html += '</div><p style="text-align:center;margin-top:15px;">Matches: '+matched+'/4</p>';
+                document.getElementById('mg-content').innerHTML = html;
+            }
+            window.flipM = function(i) {
+                if (flipped.includes(i) || matched>=4) return;
+                flipped.push(i);
+                if (flipped.length===2) {
+                    if (cards[flipped[0]]===cards[flipped[1]]) { matched++; flipped=[]; if(matched>=4) { setTimeout(()=>finishMinigame(loc,true),500); } }
+                    else setTimeout(()=>{flipped=[];render();},800);
+                }
+                render();
+            };
+            render();
+        }
+
+        // Finish minigame
+        function finishMinigame(loc, success) {
+            const key = loc.id+'_'+G.day;
+            G.visited.push(key);
+            if (success) {
+                G.money += loc.reward;
+                document.getElementById('mg-content').innerHTML = `<div class="result-box"><div class="result-icon">🎉</div><h3 class="success">Success!</h3><p>Earned $${loc.reward}!</p><p style="font-size:1.3em;color:#ffd700;">Total: $${G.money}</p></div>`;
+            } else {
+                document.getElementById('mg-content').innerHTML = `<div class="result-box"><div class="result-icon">😔</div><h3 class="fail">Not This Time</h3><p>Try again tomorrow.</p></div>`;
+            }
+            updateUI();
+        }
+
+        // Shop
+        function renderShop() {
+            const list = document.getElementById('shop-list');
+            list.innerHTML = SHOP.map(item => {
+                const owned = item.special && G.inventory.some(i=>i.id===item.id);
+                const can = G.money >= item.price && !owned;
+                return `<div class="shop-item"><div class="shop-icon">${item.icon}</div><div class="shop-name">${item.name}</div><div class="shop-desc">${item.desc}</div><div class="shop-price">💵 ${item.price}</div><button class="btn-small" onclick="buyItem('${item.id}')" ${can?'':'disabled'} style="margin-top:8px;">${owned?'Owned':'Buy'}</button></div>`;
+            }).join('');
+        }
+        window.buyItem = function(id) {
+            const item = SHOP.find(i=>i.id===id);
+            if (G.money >= item.price) {
+                G.money -= item.price;
+                if (item.effect==='trust') G.trust = Math.min(100, G.trust+item.val);
+                else if (item.effect==='str') G.str++;
+                else if (item.effect==='skl') G.skl++;
+                else if (item.effect==='cha') G.cha++;
+                else if (item.effect==='lck') G.lck++;
+                else if (item.effect==='all') { G.str++;G.skl++;G.cha++;G.lck++; }
+                else if (item.special) G.inventory.push(item);
+                updateUI();
+                renderShop();
+                alert('Bought '+item.name+'!');
+            }
+        };
+
+        // Inventory
+        function renderInventory() {
+            let html = G.inventory.map(i=>`<div class="inv-item">${i.icon} ${i.name}</div>`).join('');
+            if (!html) html = '<p style="color:#888;">Your pockets are empty.</p>';
+            document.getElementById('inv-list').innerHTML = html;
+        }
+
+        // Story
+        function advanceStory() {
+            if (G.progress >= SCENES.length) { showEnding(); return; }
+            const s = SCENES[G.progress];
+            G.day = s.day;
+            updateUI();
+            let opts = s.opts.map((o,i)=>{
+                const hasReq = !o.req || G.inventory.some(it=>it.id===o.req);
+                return `<button class="choice-btn" onclick="makeChoice(${i})" ${!hasReq?'disabled':''}>${o.text}${!hasReq?'<br><span class="choice-req">(Requires: '+o.req+')</span>':''}</button>`;
+            }).join('');
+            document.getElementById('story-content').innerHTML = `<span class="day-badge">Day ${s.day}</span><h3 style="color:#d4a574;margin:10px 0;">${s.title}</h3>${s.text}<div class="choices"><p style="color:#d4a574;margin:15px 0 10px;">What do you do?</p>${opts}</div>`;
+            show(9);
+        }
+        window.makeChoice = function(i) {
+            const s = SCENES[G.progress];
+            const o = s.opts[i];
+            const stat = G[o.stat];
+            const roll = Math.floor(Math.random()*6)+1;
+            const total = roll + stat;
+            const success = total >= 10;
+            if (success) G.trust = Math.min(100, G.trust+5);
+            else G.trust = Math.max(0, G.trust-10);
+            G.progress++;
+            updateUI();
+            document.getElementById('story-content').innerHTML = `<div class="dice-result"><div class="dice-emoji">🎲</div><p>Roll: ${roll} + ${stat} = ${total} vs 10</p><p class="${success?'success':'fail'}" style="font-size:1.3em;">${success?'✓ SUCCESS!':'✗ Failed...'}</p><p style="margin-top:15px;">${o.success}</p></div><button class="btn" onclick="${G.progress>=SCENES.length?'showEnding()':'show(5)'}">${G.progress>=SCENES.length?'See Your Fate':'Continue'}</button>`;
+        };
+
+        // Endings
+        function showEnding() {
+            let end;
+            if (G.inventory.some(i=>i.id==='map') && G.trust>=70) {
+                end = {title:'The Perfect Ending', cls:'ending-perfect', text:'<p>You reach George just in time. Together, you find Lennie by the river. The farm dream burns bright again.</p><p>"Lennie, you listen. We gonna get that farm. You an\' me. With rabbits."</p><p>Against all odds, George manages to convince the others. You help them escape. Somewhere in California, two men and a dream survive.</p><div class="quote" style="margin-top:20px;">"The best-laid plans of mice and men often go awry.<br>But sometimes, just sometimes, they succeed."</div>'};
+            } else if (G.trust>=50) {
+                end = {title:'A Bittersweet Ending', cls:'ending-good', text:'<p>The dream dies, but Lennie lives. George takes him far away, to another ranch, another chance.</p><p>It\'s not the farm they dreamed of, but Lennie is safe. And that counts for something.</p><div class="quote" style="margin-top:20px;">"An\' live off the fatta the lan\'."</div>'};
+            } else if (G.progress>=6) {
+                end = {title:'The Tragic Ending', cls:'ending-tragic', text:'<p>It ends as Steinbeck wrote it. The men hunt Lennie down. George, with trembling hands, does what must be done.</p><p>The dream dies with Lennie. George is alone now, really alone, for the first time.</p><div class="quote" style="margin-top:20px;">"I think I knowed it. I think maybe I knowed it all along."<br>— George</div>'};
+            } else {
+                end = {title:'A Tale Untold', cls:'ending-bad', text:'<p>Your journey ends here, unfinished. Perhaps you gave up, perhaps tragedy struck early. Either way, the story remains untold.</p><p>The dream of the farm fades like morning mist.</p>'};
+            }
+            document.getElementById('ending-content').innerHTML = `<h1 class="ending-title ${end.cls}">${end.title}</h1><div class="story-text">${end.text}</div><p style="text-align:center;color:#888;margin-top:20px;">Progress: ${G.progress}/${SCENES.length} | Trust: ${G.trust}%</p>`;
+            show(10);
+        }
+
+        function restart() {
+            Object.assign(G, {name:'',token:'👤',str:5,skl:5,cha:5,lck:5,points:5,money:15,day:1,trust:75,inventory:[],progress:0,visited:[]});
+            document.querySelectorAll('.token').forEach(t=>t.classList.remove('selected'));
+            ['attr-str','attr-skl','attr-cha','attr-lck'].forEach((id,i)=>document.getElementById(id).textContent=5);
+            document.getElementById('points-left').textContent=5;
+            document.getElementById('btn-token').disabled=true;
+            document.getElementById('btn-start').disabled=true;
+            document.getElementById('input-name').value='';
+            show(0);
+        }
+
+        // Event Listeners
+        document.getElementById('btn-begin').onclick = () => show(1);
+        document.getElementById('btn-continue').onclick = () => show(2);
+        document.getElementById('input-name').oninput = function() { G.name=this.value; document.getElementById('btn-name').disabled=this.value.trim()===''; };
+        document.getElementById('btn-name').onclick = () => { G.name=document.getElementById('input-name').value; show(3); };
+        document.getElementById('btn-token').onclick = () => show(4);
+        document.getElementById('btn-start').onclick = () => { updateUI(); show(5); };
+        document.getElementById('btn-back').onclick = () => { updateUI(); show(5); };
+        document.getElementById('btn-shop').onclick = () => { renderShop(); show(7); };
+        document.getElementById('btn-shop-back').onclick = () => show(5);
+        document.getElementById('btn-inventory').onclick = () => { renderInventory(); show(8); };
+        document.getElementById('btn-inv-back').onclick = () => show(5);
+        document.getElementById('btn-story').onclick = () => advanceStory();
+        document.getElementById('btn-story-back').onclick = () => show(5);
+        document.getElementById('btn-restart').onclick = () => restart();
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

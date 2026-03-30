@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max2 Games — Educational Adventures</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        header { text-align: center; margin-bottom: 60px; }
+        h1 { font-size: 3em; margin-bottom: 10px; background: linear-gradient(90deg, #e94560, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #888; font-size: 1.2em; }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .game-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .game-icon { font-size: 4em; margin-bottom: 20px; }
+        .game-title { font-size: 1.5em; margin-bottom: 10px; color: #e94560; }
+        .game-desc { color: #aaa; line-height: 1.6; margin-bottom: 20px; }
+        .game-meta { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tag { background: rgba(233,69,96,0.2); color: #e94560; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #e94560, #c73e54);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #666;
+        }
+        footer a { color: #e94560; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Max2 Games</h1>
+            <p class="subtitle">Interactive educational adventures — built with MiniMax</p>
+        </header>
+
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-icon">🐭</div>
+                <h2 class="game-title">Of Mice and Men</h2>
+                <p class="game-desc">Step into the dust bowls of 1930s California. Work alongside George and Lennie, make crucial choices, and determine the fate of your friends in this interactive adaptation of Steinbeck's classic.</p>
+                <div class="game-meta">
+                    <span class="tag">Literature</span>
+                    <span class="tag">Adventure</span>
+                    <span class="tag">Multiple Endings</span>
+                </div>
+                <a href="./mice-and-men/" class="btn">Play Now</a>
+            </div>
+
+            <!-- Future games will appear here -->
+            <div class="game-card" style="opacity: 0.5;">
+                <div class="game-icon">🎭</div>
+                <h2 class="game-title">Coming Soon</h2>
+                <p class="game-desc">More educational games are in development. Check back for new adventures in literature, history, and science.</p>
+                <div class="game-meta">
+                    <span class="tag">In Development</span>
+                </div>
+                <a href="#" class="btn" style="background: #444; cursor: not-allowed;">Stay Tuned</a>
+            </div>
+        </div>
+
+        <footer>
+            <p>Created by <a href="https://0604.ai" target="_blank">0604.ai</a> | Powered by MiniMax</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Games designed for classroom use and independent learning.</p>
+        </footer>
+    </div>
+</body>
+</html>
